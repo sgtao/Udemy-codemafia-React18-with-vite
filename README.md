@@ -1,4 +1,4 @@
-# Udemy-codemafia-React18-guide-with-vite
+# Udemy-codemafia-React18-with-vite
 
 ## 概要
 - Udemy『【2022年最新】React(v18)完全入門ガイド』を`vite`環境で整理する
