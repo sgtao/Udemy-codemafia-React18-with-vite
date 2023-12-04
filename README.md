@@ -63,6 +63,65 @@
   - Reactのデバッグの仕方
   - npmコマンドの使い方やパッケージ管理方法
 
+### 環境構築方法
+#### プロジェクトフォルダの作成
+```sh
+npm create vite@latest ${TARGET_DIRNAME} -- --template react
+```
+
+#### 教材ファイルをJSXファイルへコンバート
+- 
+```sh
+export TARGET_DIRNAME="04_react_basic"
+rm -rf ${TARGET_DIRNAME}
+npm create vite@latest ${TARGET_DIRNAME} -- --template react
+cd ${TARGET_DIRNAME}/
+rm -rf src
+cp -r ../00_references/99_react-guide-material/${TARGET_DIRNAME}/src .
+# cp -r ../00_references/11_Udemy_React18-complete-guide/04_react_basic/README.md .
+mv src/index.js src/main.jsx
+pnpm i
+pnpm i web-vitals -D
+pnpm run dev
+find src -name "*.js" -print
+# for filename in ` find src -name "*.js" -print ` ; do ls $filename; done
+# modFilename=`echo $filename |  sed -e "s/.js/.jsx/" `
+# echo $modFilename
+for filename in ` find src -name "*.js" -print ` ; do ls $filename;  modFilename=`echo $filename |  sed -e "s/.js/.jsx/" `; mv $filename $modFilename ; done
+for filename in ` find src -name "*.js" -print ` ; do ls $filename; done
+# pnpm run dev
+# cd src/080_expr_in_jsx/
+# for filename in ` find src -name "*.js" -print ` ; do ls $filename;  modFilename=`echo $filename |  sed -e "s/.js/.jsx/" `; mv $filename $modFilename ; done
+# cd ../130_whats_jsx/
+# for filename in ` find . -name "*.js" -print ` ; do ls $filename;  modFilename=`echo $filename |  sed -e "s/.js/.jsx/" `; mv $filename $modFilename ; done
+cd ../..
+pnpm run dev
+#
+# convert to UTF file
+# for filename in `find src -name "*.jsx"` ; do ls $filename; nkf_to_utffile $filename; done
+# for filename in `find src -name "*.css"` ; do ls $filename; nkf_to_utffile $filename; done
+```
+
+#### Warningメッセージについて
+- viteを利用した際にwarningが発生する。
+  * `/* @vite-ignore */`により解消されるが、`npm run build`ではエラーとなる。
+  * ビルドはしないため、とりあえず利用する
+```
+${current_directory}/src/App.jsx
+21 |  const STORAGE_KEY = "rcg-current-lec-index";
+22 |  const DynamicLoader = ({ component }) => {
+23 |    const LazyComponent = lazy(() => import(`${component}`));
+   |                                            ^^^^^^^^^^^^^^
+24 |    return /* @__PURE__ */ jsxDEV(BaseErrorBoundary, { children: /* @__PURE__ */ jsxDEV(Suspense, { fallback: /* @__PURE__ */ jsxDEV("div", { children: "Loading..." }, void 0, false, {
+25 |      fileName: "src/App.jsx",
+The above dynamic import cannot be analyzed by Vite.
+See https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: src/App.jsx
+
+```
+
 
 ## 参考）オリジナルコンテンツの学習準備
 [toTop](#)
@@ -92,4 +151,18 @@ nvm install --lts
 npm i pnpm -g
 npm i create-react-app -g
 npm i create-next-app -g
+```
+
+### Viteのプロジェクト作成方法
+```sh
+# for JavaScript project
+npm create vite@latest react-template -- --template react
+# for TypeScript project
+npm create vite@latest react-template -- --template react-ts
+```
+
+#### 既存のプロジェクトにインストールする場合
+```sh
+cd existed-project;
+npm i -E -D vite @vitejs/plugin-react;
 ```
