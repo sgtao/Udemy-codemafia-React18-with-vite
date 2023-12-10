@@ -266,6 +266,8 @@ export default Example;
         +- List
             +- ul>li*5
 ```
+- 呼び出されるコンポーネントは`export`を定義。呼び出し側は`import`でコンポネント名まで定義する
+  - 参考：`import`と`export`は、JavaScriptの[メモ](../03_js_basic/README.md#012_esmoduleのexport／importについて学ぼう)を参考に
 
 ### ソース
 - [end source](./src/070_component_nest/end/Example.jsx)
@@ -354,27 +356,177 @@ export const List = () => {
 ## 029_不要なタグを出力しないFragmentの使い方
 [toTop](#)
 
-### ソース
+### 問題：練習問題（コード）
+```jsx
+const Example = () => {
+  return (
+    <div>
+      <h3>練習問題</h3>
+      <p>/componentsフォルダをstart内に作成して、Childにコンポーネントを分離して、Exampleコンポーネントで読み込んでください。</p>
+      { /* ↓↓↓ Childコンポーネントに移動 */ }
+      <div className="component">
+        <h3>Child Component</h3>
+      </div>
+      { /* ↑↑↑ Childコンポーネントに移動 */ }
+    </div>
+  );
+};
+ 
+export default Example;
+```
+
+### ソース(回答)
 - [end source](./src/075_fragment/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Child from "./components/Child";
 
+const Example = () => <Child />;
 
+export default Example;
+```
+- `Child`コンポーネント：
+```jsx
+import "./Child.css";
+import { Fragment } from "react";
+
+const Child = () => {
+  /* POINT Fragmentがなぜ必要なのか？
+  Reactのコンポーネントはルート要素が１つでなければならない（独立したツリー構造になっている）というルールがあります。そのため、Fragmentを使うことで、複数の要素を返すコンポーネントを余分なノードを追加することなくまとめることができます。
+  */
+  return (
+    <Fragment key="1">
+      {/* POINT keyはFragmentが受け取ることができる唯一の属性 */}
+      <div className="component">
+        <h3>Hello Component</h3>
+      </div>
+      <h3>Hello Fragment</h3>
+      <p>
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Obcaecati
+        repellat dolor doloribus iure consequatur soluta? Optio corrupti ratione
+        suscipit recusandae eius perspiciatis illo corporis? Aliquam nam
+        repellendus quos expedita est?
+      </p>
+    </Fragment>
+  );
+};
+
+export default Child;
+```
 
 ## 030_JSX内でJSコードを実行してみよう
 [toTop](#)
 
+- JSX(HTML定義)内にJavaScriptコードを定義する方法を紹介
+  * 波括弧内は実行時に評価されます
+    * マスタッシュ記号で囲む(`{...}`)
+    * 波カッコに定義できるのは**式のみ（文は定義できない）**
+  * 配列を子要素に指定すると配列の要素が値の列として展開されます
+    ```jsx
+    <h3>{arry}</h3>
+    ```
+  * 関数を呼び出して return した値を埋め込むこともできる
+  * 波括弧内に JSX を記述することもできる
 
 ### ソース
 - [end source](./src/080_expr_in_jsx/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Child from "./components/Child";
+import Expression from "./components/Expression";
 
+const Example = () => {
+  return (
+    <div>
+      <Child />
+      <Expression />
+    </div>
+  );
+};
 
+export default Example;
+```
+- `Expression`コンポーネント：
+```jsx
+/* POINT JSX には JavaScript 式を記述できる
+JSX 内の 波括弧 {...} で囲んだ部分は JavaScript 式として実行時に評価されます。
+ */
+import "./Expression.css";
+
+const Expression = () => {
+  const title = "Expression";
+  const arry = ["item1", "item2", "item3"];
+  const hello = (arg) => `${arg} Function`;
+  const jsx = <h3>Hello JSX</h3>;
+  console.log(jsx);
+
+  return (
+    // POINT {...} は属性値にも使用できます。
+    <div className={title.toLowerCase()}>
+      {/* POINT 波括弧内は実行時に評価されます。 */}
+      <h3>{"Hello " + title}</h3>
+      {/* POINT 配列を子要素に指定すると配列の要素が値の列として展開されます。 */}
+      <h3>{arry}</h3>
+      {/* POINT 関数を呼び出して return した値を埋め込むこともできます。 */}
+      <h3>{hello("Hello")}</h3>
+      {/* POINT 波括弧内に JSX を記述することもできます。*/}
+      {<h3>Hello JSX</h3>}
+      {/* POINT 変数に代入したJSXも埋め込めます。 */}
+      {jsx}
+    </div>
+  );
+};
+
+export default Expression;
+```
 
 ## 031_【TIPS】式と文の違い
 [toTop](#)
+- 式とは、『何らかの値を返す記述』
+- 文は、実行するが値は返さない
+* 「式は文になる」。しかし、「文は式にならない」
+* 式文というものもある
+  * 値`1`は式。値＋セミコロン`1;`は式文と呼ばれる
 
 ### ソース
 - [end source](./src/085_expr_and_state/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+/* POINT 式と文
+式：何らかの値を返すもの（変数に代入できるもの）
+文：変数宣言、for文、if文、switch文やセミコロンで区切るもの。
+*/
 
+import Child from "./components/Child";
 
+const Example = () => <Child />;
+
+export default Example;
+```
+- `Child`コンポーネント：
+```jsx
+import "./Child.css";
+
+const Child = () => {
+  const a = 1 === 1;
+  console.log(a);
+  const hello = (a)  => {
+    if (a)
+      return 'hello'
+    else
+      return 'false'
+  }
+  return (
+    <div className="component">
+      <h3>式と文</h3>
+      {1 === 1} {/* 左は式なので、波カッコ内に書ける*/}
+      {/* if (a) { 'hello'} */}{/* 左の記述は文となるため、波カッコ内に書けない*/}
+    </div>
+  );
+};
+
+export default Child;
+```
 
 ## 032_【練習】JSX内で式を使ってみよう
 [toTop](#)
