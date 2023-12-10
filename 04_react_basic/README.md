@@ -199,37 +199,197 @@ pnpm run dev
   }
 }
 ```
+### ソース
+- [end source](./src/050_project_sample/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+const Example = () => {
+  return (
+    <div>
+      <h3>endフォルダのコード</h3>
+    </div>
+  );
+};
+export default Example;
+```
+
 
 ## 026_コンポーネントにスタイルを当ててみよう
 [toTop](#)
+- 簡易的なスタイリングは、CSSファイルを読み込む
+  * `import`する際は相対パス（`./xxxx`）で指定する
+  * JSX内でHTML要素にクラス名を指定する場合は、`clasName="（クラス名）"`で指定する
+### ソース
+- [end source](./src/060_styling/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+/* POINT コンポーネントのスタイリング
+  (詳細は 07_styling_component で紹介)
+*/
 
+//  POINT CSS ファイルを import する
+import "./Example.css";
+
+const Example = () => {
+  return (
+    /* POINT クラス名は class ではなく className で指定する
+    HTML のように見えますが、これは JSX と呼ばれる構文です。class 属性は className を使用しましょう。
+    */
+
+    /* POINT class と className
+    React 16 以降では custom DOM attributes をサポートしているため class も使用可能です。（ただ、ウォーニングも出るため、非推奨！！）
+    */
+    <div className="component">
+      <h3>Hello Component</h3>
+    </div>
+  );
+};
+
+export default Example;
+```
+
+- スタイルファイル：
+```css
+.App-end .component {
+    padding: 1rem;
+    color: blue;
+    border: 5px solid blue;
+}
+```
 
 ## 027_コンポーネントの分割方法
 [toTop](#)
+- 下のような階層のコンポーネントを定義したい。
+```uml
++- Example
+    +- Child
+        +- List
+            +- ul>li*5
+```
 
+### ソース
+- [end source](./src/070_component_nest/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Child from "./components/Child";
+
+const Example = () => <Child />;
+
+export default Example;
+```
+
+- 呼び出すコンポーネント：
+```jsx
+// POINT List コンポーネントを名前付き import
+import { List } from "./List";
+import "./Child.css";
+
+const Child = () => {
+  return (
+    <div className="component">
+      <h3>Hello Component</h3>
+      <List />
+    </div>
+  );
+};
+
+// POINT コンポーネントを default export
+export default Child;
+
+/* POINT default export の別の記法
+
+export default () => {
+  return (
+    <div className="component">
+      <h3>Hello Component</h3>
+      <List />
+    </div>
+  );
+};
+
+*/
+```
+
+- `List`コンポーネント：
+```jsx
+const List = () => {
+  return (
+    <ul>
+      <li>item-1</li>
+      <li>item-2</li>
+      <li>item-3</li>
+      <li>item-4</li>
+      <li>item-5</li>
+    </ul>
+  );
+};
+
+// POINT List コンポーネントを 名前付き export
+export { List };
+
+/* POINT 名前付き export の別の記法
+
+export const List = () => {
+  return (
+    <ul>
+      <li>item-1</li>
+      <li>item-2</li>
+      <li>item-3</li>
+      <li>item-4</li>
+      <li>item-5</li>
+    </ul>
+  );
+};
+
+*/
+```
 
 ## 028_【練習】コンポーネントの分割方法
 [toTop](#)
 
+### ソース
+- [end source](./src/073_practice_component/end/Example.jsx)
+
 
 ## 029_不要なタグを出力しないFragmentの使い方
 [toTop](#)
+
+### ソース
+- [end source](./src/075_fragment/end/Example.jsx)
+
 
 
 ## 030_JSX内でJSコードを実行してみよう
 [toTop](#)
 
 
+### ソース
+- [end source](./src/080_expr_in_jsx/end/Example.jsx)
+
+
+
 ## 031_【TIPS】式と文の違い
 [toTop](#)
+
+### ソース
+- [end source](./src/085_expr_and_state/end/Example.jsx)
+
 
 
 ## 032_【練習】JSX内で式を使ってみよう
 [toTop](#)
 
+### ソース
+- [end source](./src/087_practice_expr/end/Example.jsx)
+
+
 
 ## 033_propsでコンポーネントに値を渡してみよう
 [toTop](#)
+
+### ソース
+- [end source](./src/090_props/end/Example.jsx)
+
 
 
 ## 034_propsに色々な値を渡してみよう
@@ -239,21 +399,40 @@ pnpm run dev
 ## 035_【練習＆解答】propsで値を渡してみよう
 [toTop](#)
 
+### ソース
+- [end source](./src/100_practice_props/end/Example.jsx)
+
+
 
 ## 036_特別なプロパティ：props．children
 [toTop](#)
+
+### ソース
+- [end source](./src/110_props_children/end/Example.jsx)
+
 
 
 ## 037_propsの重要なルール
 [toTop](#)
 
+### ソース
+- [end source](./src/120_props_rules/end/Example.jsx)
+
+
 
 ## 038_JSXの正体
 [toTop](#)
 
+### ソース
+- [end source](./src/130_whats_jsx/end/Example.jsx)
+
+
 
 ## 039_React要素ツリーとコンポーネントツリー
 [toTop](#)
+
+### ソース
+- [end source](./src/140_react_element_component/end/Example.jsx)
 
 
 ## 040_セクションまとめ
