@@ -11,12 +11,12 @@ const Example = () => {
             <Child 
                 // POINT propsには全てのタイプの値を渡すことができます。
                 // {...o}
-                color="blue"
+                color="green"
                 fn={hello}
                 bool
                 obj={{ name: 'Tom', age: 18 }}
             />
-            <Child color="red" />
+            {/* <Child color="red" /> */}
         </>
     )
 };

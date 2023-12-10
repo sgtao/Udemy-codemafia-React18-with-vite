@@ -531,29 +531,282 @@ export default Child;
 ## 032_【練習】JSX内で式を使ってみよう
 [toTop](#)
 
+### 練習問題
+- 記述を変更し、完成コードの画面と同じ状態になるようにしてください。
+  * コンポーネントの外側（上部）に変数や関数を準備しているためうまく使ってください。
+  * ※fragmentクラスの付与されたdivタグはfragmentを使用した記法に変更してください。
+#### 練習問題（コード）
+```jsx
+const title = 'Expression';
+const array = ['item1', 'item2', 'item3'];
+const fn = (arg) => {
+  return `${arg} Function`;
+};
+const upperCaseText = 'UpperCaseText';
+
+const Example = () => {
+  return (
+    <div className="fragment">
+      <h3>練習問題</h3>
+      <p>
+        記述を変更し、完成コードと同じ状態になるようにしてください。コンポーネントの外側（上部）に変数や関数を準備しているためうまく使ってください。※fragmentクラスの付与されたdivタグはfragmentを使用した記法に変更してください。
+      </p>
+      <h3></h3>
+      <h3></h3>
+      <h3></h3>
+      <h3></h3>
+      <h3></h3>
+    </div>
+  );
+};
+ 
+export default Example;
+```
+
 ### ソース
 - [end source](./src/087_practice_expr/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+const title = 'Expression';
+const array = ['item1', 'item2', 'item3'];
+const fn = (arg) => {
+  return `${arg} Function`;
+};
+const upperCaseText = 'upperCaseText';
 
+const Example = () => {
+  return (
+    <>
+      <h3>Hello JSX</h3>
+      {/* toUpperCaseメソッドで文字列をすべて大文字にします。 */}
+      <h3>{upperCaseText.toUpperCase()}</h3>
+      {/* +演算子で文字列を結合します。 */}
+      <h3>{'Hello ' + title}</h3>
+      {/* 配列がJSX内で渡されると自動的に要素が展開されて表示されます。 */}
+      <h3>{array}</h3>
+      {/* 関数の実行はreturnに続く値が返ってきます。 */}
+      <h3>{fn('Hello')}</h3>
+    </>
+  );
+};
+
+export default Example;
+```
 
 
 ## 033_propsでコンポーネントに値を渡してみよう
 [toTop](#)
+- ほかのコンポーネントに対して値を渡す方法を紹介
+  * 親コンポーネントで属性値のように記述した各値は、１オブジェクトとして子コンポーネントで受け取れる
+  * 方法１：子コンポーネントで親の属性値と同じ名称の引数を定義する
+  * 方法２：`props`引数：引数全体をObjectとして渡せる（`props`の名前でもよい）
+  * 方法３：コンポーネントで分割代入（`{color, fn, bool, obj}`）のようにも定義できる
+    * 分割代入の引数は初期値を設定すると、親コンポーネントでの未使用時に対応できる
+    * 子コンポーネントで、引数名のエイリアスも定義できる
+    ```jsx
+    const Child = ({ color: c = 'green'}) => {
+      return (
+        <div className={`component ${c}`}> // 引数名を`c`で使える
+          ...
+        </div>
+      );
+    };
+    ```
+    * 分割代入は、[JavaScriptのメモ](../03_js_basic/README.md#016_分割代入について学ぼう)を参考に
 
 ### ソース
 - [end source](./src/090_props/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Child from "./components/Child";
+
+const Example = () => {
+    const hello = (arg) => `Hello ${arg}`;
+    // const o = {
+    //     color: "red",
+    //     num: 123
+    // }
+    return (
+        <>
+            <Child
+                // POINT propsには全てのタイプの値を渡すことができます。
+                // {...o}
+                color="blue"
+                fn={hello}
+                bool
+                obj={{ name: 'Tom', age: 18 }}
+            />
+            <Child color="red" />
+        </>
+    )
+};
+
+export default Example;
+```
+
+- `Child`コンポーネント：
+```jsx
+/* POINT Props の受け取り方
+親コンポーネントで属性値のように記述した各値は、１つのオブジェクトとして子コンポーネントで受け取ることができる。
+ */
 
 
+import "./Child.css";
+
+/* POINT Propsを分割代入で受け取る！ */
+/* POINT Propsのデフォルト値を設定する！ */
+const Child = ({ color: c = 'green', num, fn, bool, obj }) => {
+
+  // console.log(bool);
+
+  return (
+    <div className={`component ${c}`}>
+      <h3>Hello Component</h3>
+      {/* <h3>{num}</h3>
+      <h3>{fn('Props')}</h3>
+      <h3>{ bool ? 'true' : 'false'}</h3>
+      <h3>{ obj.name + obj.age }</h3> */}
+    </div>
+  );
+};
+
+export default Child;
+```
 
 ## 034_propsに色々な値を渡してみよう
 [toTop](#)
+
+### ソース（講座でライブコーディングしていた）
+- [end source](./src/090_props/end/Example.jsx)
+- `Child`コンポーネント：
+```jsx
+/* POINT Props の受け取り方
+親コンポーネントで属性値のように記述した各値は、１つのオブジェクトとして子コンポーネントで受け取ることができる。
+ */
+
+
+import "./Child.css";
+
+/* POINT Propsを分割代入で受け取る！ */
+/* POINT Propsのデフォルト値を設定する！ */
+const Child = ({ color: c = 'green', num, fn, bool, obj }) => {
+
+  // console.log(bool);
+
+  return (
+    <div className={`component ${c}`}>
+      <h3>Hello Component</h3>
+      <h3>{num}</h3>
+      <h3>{fn('Props')}</h3>
+      <h3>{ bool ? 'true' : 'false'}</h3>
+      <h3>{ obj.name + obj.age }</h3>
+    </div>
+  );
+};
+
+export default Child;
+```
 
 
 ## 035_【練習＆解答】propsで値を渡してみよう
 [toTop](#)
 
+### 問題
+- 練習問題
+  - Profileコンポーネントの中身を変更して完成コードと同じ状態になるようにしてください。
+  - ※なるべく分割代入を使用してください。
+- [start source](./src/100_practice_props/start/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Profile from "./components/Profile";
+
+const profile = [
+  { name: "Takashi", age: 19, country: "Japan" },
+  { name: "Jane", age: 28, country: "UK" },
+];
+
+const Example = () => {
+  return (
+    <div>
+      <h3>練習問題</h3>
+      <p>Profileコンポーネントの中身を変更して完成コードと同じ状態になるようにしてください。※なるべく分割代入を使用してください。
+      </p>
+      <Profile
+        name={profile[0].name}
+        age={profile[0].age}
+        country={profile[0].country}
+      />
+      <Profile {...profile[1]} />
+      <Profile />
+    </div>
+  );
+};
+
+export default Example;
+```
+- 子コンポーネント：
+```jsx
+import "./Profile.css";
+
+const Profile = (props) => {
+  return (
+    <div className="profile">
+
+    </div>
+  );
+};
+
+export default Profile;
+```
+### 試行：
+```jsx
+import "./Profile.css";
+/* 初期コード：
+const Profile = (props) => {
+  return (
+    <div className="profile">
+
+    </div>
+  );
+};
+*/
+const Profile = ({
+  name = 'Hide',
+  age = 99,
+  country = 'Japan',
+}) => {
+  return (
+    <div className="profile">
+      <h3>Name: {name}</h3>
+      <h3>Age: {age}</h3>
+      <h3>Country: {country}</h3>
+    </div>
+  );
+}
+
+export default Profile;
+```
+
+
+
 ### ソース
 - [end source](./src/100_practice_props/end/Example.jsx)
+- 子コンポーネント：
+```jsx
+import "./Profile.css";
 
+const Profile = ({ name = "John Doe", age = "??", country = "Japan"}) => {
+  return (
+    <div className="profile">
+      <h3>Name: {name}</h3>
+      <p>Age: {age} </p>
+      <p>From: {country}</p>
+    </div>
+  );
+};
+
+export default Profile;
+```
 
 
 ## 036_特別なプロパティ：props．children
