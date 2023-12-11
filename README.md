@@ -94,8 +94,8 @@ for filename in ` find src -name "*.js" -print ` ; do ls $filename; done
 # for filename in ` find src -name "*.js" -print ` ; do ls $filename;  modFilename=`echo $filename |  sed -e "s/.js/.jsx/" `; mv $filename $modFilename ; done
 # cd ../130_whats_jsx/
 # for filename in ` find . -name "*.js" -print ` ; do ls $filename;  modFilename=`echo $filename |  sed -e "s/.js/.jsx/" `; mv $filename $modFilename ; done
-cd ../..
-pnpm run dev
+# cd ../..
+# pnpm run dev
 #
 # convert to UTF file
 # for filename in `find src -name "*.jsx"` ; do ls $filename; nkf_to_utffile $filename; done
