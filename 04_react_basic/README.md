@@ -811,35 +811,284 @@ export default Profile;
 
 ## 036_特別なプロパティ：props．children
 [toTop](#)
+- 特別なプロパティ：`props.children`を紹介
+  - 親コンポーネントで開始タグと終了タグで囲んだ範囲を引数として渡す
+```jsx
+const Example = () => {
+  return (
+    <div>
+      <Container title="順番通り渡す">
+        {/* props.children にわたる -start- */}
+        <Profile key={profile[0].name} {...profile[0]} />
+        <Profile key={profile[1].name} {...profile[1]} />
+        {/* props.children にわたる - end - */}
+      </Container>
+    </div>
+  );
+};
+```
 
 ### ソース
 - [end source](./src/110_props_children/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Profile from "./components/Profile";
+import Container from "./components/Container";
 
+const profile = [
+  { name: "Takashi", age: 19, country: "Japan" },
+  { name: "Jane", age: 28, country: "UK", color: "red" },
+];
+
+/* POINT コンポーネントの子要素は props.children に渡る！
+コンポーネントが子要素を持つ場合、props.children という特別なプロパティとして受け渡されます。
+ */
+const Example = () => {
+  return (
+    <div>
+      <Container title="順番通り渡す">
+        <Profile key={profile[0].name} {...profile[0] /* profileの配列０番目を展開している*/} />
+        <Profile key={profile[1].name} {...profile[1]} />
+      </Container>
+
+      <Container
+        title="個別渡す"
+        first={<Profile key={profile[0].name} {...profile[1]} />}
+        second={<Profile key={profile[1].name} {...profile[0]} />}
+      />
+    </div>
+  );
+};
+
+export default Example;
+```
+
+- 子コンポーネント：`Profile`（Childrenなし）
+```jsx
+import "./Profile.css";
+
+const Profile = ({ name, age, country, color }) => {
+  return (
+    <div className={`profile ${color}`}>
+      <h3>Name: {name}</h3>
+      <p>Age: {age} </p>
+      <p>From: {country}</p>
+    </div>
+  );
+};
+
+export default Profile;
+```
+
+- 子コンポーネント：`Container`（Childrenあり）
+```jsx
+import "./Container.css";
+
+/* POINT props.children として子要素を受け取る
+ここでは分割代入を使用して、 props.children を取り出しています。
+*/
+const Container = ({ title, children, first, second, color }) => {
+  return (
+    <div className={`container ${color}`}>
+      <h3>{title}</h3>
+      <div>{children}</div>
+      <div>{first}</div>
+      <div>{second}</div>
+    </div>
+  );
+};
+
+export default Container;
+```
 
 
 ## 037_propsの重要なルール
 [toTop](#)
+- `props`のルール：
+  * propsの流れは一方通行：親コンポーネント⇒子コンポーネントの流れになる
+  * propsは読み取り専用：子コンポーネントではpropsは読み取り専用オブジェクトとして扱われる
+    * 子コンポーネントで変更するには
 
 ### ソース
 - [end source](./src/120_props_rules/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Bye from "./components/Bye"
+import Hello from "./components/Hello"
 
+const Example = () => {
+  // POINT propsの流れは一方通行
+  const myName = 'Tom';
 
+  return (
+    <>
+      <Hello name={myName} />
+      <Bye name={myName} />
+    </>
+  );
+};
+
+export default Example;
+```
+
+- 子コンポーネント：`Bye`
+```jsx
+const Bye = (props) => {
+  return (
+    <div>
+      <h3>Bye {props.name}</h3>
+    </div>
+  );
+};
+
+export default Bye;
+```
+
+- 子コンポーネント：`Hello`
+```jsx
+const Hello = (props) => {
+
+  // POINT propsは読み取り専用
+  // props.name = 'Bob';
+  // エラーが発生！
+
+  // Reflect.getOwnPropertyDescriptorメソッドでオブジェクトの隠し設定を調べられる
+  const desc = Reflect.getOwnPropertyDescriptor(props, 'name');
+  console.log(desc)
+  // {
+  //     "value": "Tom", // 値
+  //     "writable": false, // 書き換え可能か？
+  //     "enumerable": true, // forループ文で列挙対象になるか？
+  //     "configurable": false // 隠し設定を変更できるか？
+  // }
+
+  return (
+    <div>
+      <h3>Hello {props.name}</h3>
+    </div>
+  );
+};
+
+export default Hello;
+```
 
 ## 038_JSXの正体
 [toTop](#)
+- JSXはあくまでJSオブジェクト！！
+  * つまり、React内部でObjectに変換して表示されている
+  * 下の２つの記述は同義になる：
+  ```jsx
+  const sample1 = <h1 className="greeting">Hello World</h1>;
+
+  // React.createElement("h1", {
+  //   className: "greeting"
+  // }, "Hello World");
+  ```
+  * コンソール表示させると`Object`として扱われている
+  ```jsx
+    console.log(React.createElement("h1", {
+    className: "greeting"
+  }, "Hello World"));
+  // [object Object] // 仮想DOMやReactオブジェクトと言われる
+  ```
+
+- コンポーネントはReact要素なのか？
+  * `createReactElement`で作成されるものがコンポーネント
+  * なので、『Yes. コンポーネントはReact要素』
 
 ### ソース
 - [end source](./src/130_whats_jsx/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT JSXはあくまでJSオブジェクト！！
 
+import React from "react";
+
+const Example = () => {
+  const sample1 = <h1 className="greeting">Hello World</h1>;
+
+  // React.createElement("h1", {
+  //   className: "greeting"
+  // }, "Hello World");
+
+  const sample2 = (
+    <div>
+      <h1>Hello!</h1>
+      <h2>Good to see you.</h2>
+    </div>
+  );
+
+//   console.log(
+//     (
+//       <div>
+//         <h1>Hello!</h1>
+//         <h2>Good to see you.</h2>
+//       </div>
+//     ).props
+//   );
+
+  return React.createElement(
+    "div",
+    null,
+    React.createElement("h1", null, "Hello!"),
+    React.createElement("h2", null, "Good to see you.")
+  );
+};
+
+export default Example;
+```
 
 
 ## 039_React要素ツリーとコンポーネントツリー
 [toTop](#)
+- 『コンポーネントはReact要素』を確認してみる
 
 ### ソース
 - [end source](./src/140_react_element_component/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT React要素とコンポーネントの関係
+import React from "react";
 
+const Bye = () => {
+      return <h2>GoodBye!</h2>;
+}
+
+// const Hello = () => {
+//   return <h1>Hello</h1>;
+// }
+
+const Example = () => {
+  return (
+    <div>
+      <Bye/>
+      {/* <Hello/> */}
+    </div>
+  );
+};
+
+console.log(Example());
+// {
+//   "type": "div",
+//   "key": null,
+//   "ref": null,
+//   "props": {
+//       "children": {
+//           "key": null,
+//           "ref": null,
+//           "props": {},
+//           "_owner": null,
+//           "_store": {}
+//       }
+//   },
+//   "_owner": null,
+//   "_store": {}
+// }
+
+export default Example;
+```
 
 ## 040_セクションまとめ
 [toTop](#)
 
+- 前章までのまとめ

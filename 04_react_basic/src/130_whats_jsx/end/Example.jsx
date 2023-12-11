@@ -5,9 +5,10 @@ import React from "react";
 const Example = () => {
   const sample1 = <h1 className="greeting">Hello World</h1>;
 
-  // React.createElement("h1", {
-  //   className: "greeting"
-  // }, "Hello World");
+  console.log(React.createElement("h1", {
+    className: "greeting"
+  }, "Hello World"));
+  // [object Object]
 
   const sample2 = (
     <div>
@@ -16,14 +17,15 @@ const Example = () => {
     </div>
   );
 
-//   console.log(
-//     (
-//       <div>
-//         <h1>Hello!</h1>
-//         <h2>Good to see you.</h2>
-//       </div>
-//     ).props
-//   );
+  console.log(
+    (
+      <div>
+        <h1>Hello!</h1>
+        <h2>Good to see you.</h2>
+      </div>
+    ).props
+  );
+  // [object Object]
 
   return React.createElement(
     "div",

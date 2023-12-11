@@ -18,7 +18,23 @@ const Example = () => {
   );
 };
 
-// console.log(Example());
+console.log(Example());
+// {
+//   "type": "div",
+//   "key": null,
+//   "ref": null,
+//   "props": {
+//       "children": {
+//           "key": null,
+//           "ref": null,
+//           "props": {},
+//           "_owner": null,
+//           "_store": {}
+//       }
+//   },
+//   "_owner": null,
+//   "_store": {}
+// }
 
 export default Example;
 

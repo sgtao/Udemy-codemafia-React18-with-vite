@@ -4,8 +4,8 @@ const Hello = (props) => {
   // props.name = 'Bob';
   // エラーが発生！
 
-  // const desc = Reflect.getOwnPropertyDescriptor(props, 'name');
-  // console.log(desc)
+  const desc = Reflect.getOwnPropertyDescriptor(props, 'name');
+  console.log(desc)
 
   return (
     <div>
