@@ -35,8 +35,11 @@
 - JSX内のイベントは要素の属性でイベント（`onClick`など）を付与して、イベントに応じた関数を定義する
   * 属性の名前は、`onClick`・`onChange`・`on`
   * 関数を別で定義しておいた方が読みやすい
+    * JSX内にイベント処理を書きすぎると可読性が低下するため
   * 関数の呼び出し側は`()`を付けない。付けると関数の返り値を取得するため
-- サンプルコード：[Example.js](./src/010_eventlistener/end/Example.js)
+
+- [end source](./src/010_eventlistener/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 const Example = () => {
   const clickHandler = () => {
@@ -63,6 +66,21 @@ const Example = () => {
 export default Example;
 ```
 
+#### 関数に`()`を付けない時の処理
+- イベントハンドラーに`()`をしているのは、内部的に関数のコードを呼び出していることになる
+  * イベントが発火したときに呼び出したコードを実行してくれる
+```jsx
+  const hello = () => { return 'hello react'};
+  console.log(hello)
+//   () => {
+//     return "hello react";
+//   }
+  // `()`をつけると、関数内の`return`が返ってくる
+  console.log(hello())
+//  hello react
+```
+
+
 ## 043_開発でよく利用するイベントタイプ
 [toTop](#)
 
@@ -75,8 +93,51 @@ export default Example;
 ### イベント発火時の処理方法
 - `onChange`などのイベントハンドラは引数`e`が渡される
   * `e`に対してイベントの内容を判定して処理する
-  * POINT `e.target.value`で入力値を取得
-- サンプルコード：[Example.js](./src/015_other_events/end/Example.js)
+  * POINT `e.target.value`などで入力値を取得
+
+- [end source](./src/015_other_events/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import "./Example.css";
+
+/* POINT イベントリスナの登録方法 */
+const Example = () => {
+  return (
+    <div>
+      <h3>コンソールを確認してください。</h3>
+      <label>
+        入力値のイベント：
+        <input
+          type="text"
+          onChange={() => console.log("onChange検知")}
+          onBlur={() => console.log("onBlur検知")}
+          onFocus={() => console.log("onFocus検知")}
+        />
+      </label>
+      {/* POINT e.target.valueで入力値を取得 */}
+      <div>
+        <label>
+          入力値を取得：
+          <input type="text" onChange={(e) => console.log(e.target.value)} />
+        </label>
+      </div>
+      {/* POINT 複数のイベントを登録 */}
+      <div
+        className="hover-event"
+        onMouseEnter={() => console.log("カーソルが入ってきました。")}
+        onMouseLeave={() => console.log("カーソルが出ていきました。")}
+      >
+        ホバーしてね！
+      </div>
+    </div>
+  );
+};
+
+export default Example;
+```
+
+### KeyBoardイベント
+- `e.target.value`で入力値を取得
 ```jsx
 import "./Example.css";
 
@@ -129,9 +190,10 @@ export default Example;
 
 - 例として、input要素の`onChange`イベントで状態を読み取り表示する
 - `useState`を利用する
-- サンプルコード：[Example.js](./src/020_useState/end/Example.js)
   * POINT useStateは[ 値、変更用の関数 ]を返す
   * POINT useStateの返り値は分割代入で取得
+- [end source](./src/020_useState/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -191,6 +253,8 @@ export default Example;
 
 - `useState`から作られる`setVal(xx)`関数は、状態のセットと画面の再レンダリングを指示している
   * 下のコードをすると『再レンダリングされました』がイベントごとにコンソールに表示される
+- [end source](./src/030_useState_render/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -221,7 +285,8 @@ export default Example;
 - 画面内に複数ステートがある場合は、更新用関数に紐づく変数を`useState`でステートを作る必要がある
 - `useState`は関数内のトップレベルで定義する必要がある
 - `useState`の定義はJSX内の変数順にする必要がある
-- サンプルコード：[Example.js](./src/040_multiple_state/end/Example.js)
+- [end source](./src/040_multiple_state/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -232,10 +297,6 @@ const Example = () => {
   */
   /* POINT 複数のstateを取り扱う場合はそれぞれ名前を変更可能。 */
   console.log(<Example/>)
-  /* if文配下でも`useState`は利用できない */
-  // if (true) {
-  //   const [countA, setCountA] = useState(0);
-  // }
   const [countA, setCountA] = useState(0);
   const [countB, setCountB] = useState(10);
   const [countC, setCountC] = useState(100);
@@ -267,6 +328,8 @@ export default Example;
   * POINT stateの更新は予約される（すぐには更新されない。）
   * POINT 更新予定のstateの値の取得は、更新関数の第一引数にわたる
     * なので、更新関数`setCount`内で、更新される状態を`return`する
+- [end source](./src/050_prev_state/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -308,6 +371,33 @@ export default Example;
 - サンプルコード：[Example.js](./src/055_practice_state/end/Example.js)
   * ステートの処理は、イベントハンドラ内で、更新用関数を呼び出してステートを呼び出す
 
+- [end source](./src/055_practice_state/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import { useState } from 'react';
+
+const Example = () => {
+  const [count, setCount] = useState(0);
+  const countUp = () => {
+    setCount(state => state + 1);
+  };
+
+  const countDown = () => {
+    setCount(state => state - 1);
+  };
+  return (
+    <>
+      <h3>練習問題</h3>
+      <p>現在のカウント数: {count}</p>
+      <button onClick={countUp}>+</button>
+      <button onClick={countDown}>-</button>
+    </>
+  );
+};
+
+export default Example;
+```
+
 ## 050_オブジェクト型のステートを使う際の注意点！
 [toTop](#)
 
@@ -316,7 +406,8 @@ export default Example;
   * POINT オブジェクト型：{}, []などのプリミティブ型以外
   * POINT オブジェクト型のstateを変更する場合には必ず新しいオブジェクトを作成する！
     * オブジェクトとの一部のみを更新する場合は、スプレッド演算子を利用する
-- サンプルコード：[Example.js](./src/060_state_object/end/Example.js)
+- [end source](./src/060_state_object/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 // POINT プリミティブ型：1, "str", bool, 10n, Symbol(), null, undefined
@@ -372,11 +463,38 @@ export default Example;
   }
 ```
 
+- [end source](./src/064_state_array/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import { useState } from "react";
+
+// POINT 配列のstateの扱い方
+const Example = () => {
+  const [nums, setNums] = useState([1, 2, 3, 4, 5]);
+
+  const shuffle = () => {
+    const newNums = [ ...nums ];
+    const lastVal = newNums.pop();
+    newNums.unshift(lastVal);
+    setNums(newNums);
+  }
+  return (
+    <>
+      <h1>{nums}</h1>
+      <button onClick={shuffle}>shuffle</button>
+    </>
+  );
+};
+
+export default Example;
+```
+
 ## 052_【練習】オブジェクトのステートを更新
 [toTop](#)
 
-- サンプルコード：[Example.js](./src/068_practice_obj_state/end/Example.js)
-  * スプレッド演算子を利用した記述例
+* スプレッド演算子を利用した記述を練習する
+- [end source](./src/068_practice_obj_state/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from 'react';
 
@@ -384,17 +502,23 @@ const Example = () => {
   const orderObj = { item: 'apple', count: 10 };
   const [order, setOrder] = useState(orderObj);
   const changeItem = (e) => {
-    // const nextOrder = { ...orderObj, item: e.target.value };
-    // setOrder(nextOrder);
-    setOrder( order => ({ ...order, item: e.target.value }));
+    // POINT オブジェクトを複製して新しいオブジェクトを生成
+    setOrder(order => ({ ...order, item: e.target.value }));
+  };
+  const countUp = () => {
+    setOrder(order => ({ ...order, count: order.count + 1 }));
+  };
+  const countDown = () => {
+    setOrder(order => ({ ...order, count: order.count - 1 }));
   };
   return (
-    <div>
-      <h3>練習問題</h3>
-      <h3>Item:{ order.item }</h3>
-      <h3>Count:{ order.count }</h3>
+    <>
+      <h3>Item:{order.item}</h3>
+      <h3>Count:{order.count}</h3>
       <input type="text" value={order.item} onChange={changeItem} />
-    </div>
+      <button onClick={countUp}>+</button>
+      <button onClick={countDown}>-</button>
+    </>
   );
 };
 
@@ -407,7 +531,8 @@ export default Example;
 - 配列の場合、配列全体を更新したい場合がある。
   * このときスプレッド演算子を利用するのが難しい
   * そのため、配列では一度、更新する配列を作成（`const newNums`）して、それで更新関数を呼び出す(`setNums(newNums)`)
-- サンプルコード：[Example.js](./src/064_state_array/end/Example.js)
+- [end source](./src/064_state_array/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -435,16 +560,103 @@ export default Example;
 ## 054_ステートとコンポーネントの関係
 [toTop](#)
 
+- [end source](./src/070_state_and_component/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import { useState } from "react";
+
+// POINT stateとコンポーネントの関係
+const Example = () => {
+  const [ toggle, setToggle ] = useState(true);
+  const toggleComponent = () => {
+    setToggle(prev => !prev);
+  }
+  return (
+    <>
+    {/* POINT コンポーネントの位置によってstateが識別される */}
+    <button onClick={toggleComponent}>toggle</button>
+    {toggle ? <Count key="A" title="A"/> : <Count key="B" title="B"/>}
+    {/* <Count title="A"/>
+    {toggle && <Count title="B"/>} */}
+    </>
+  )
+}
+const Count = ({ title }) => {
+  const [count, setCount] = useState(0);
+  const countUp = () => {
+    setCount((prevstate) => prevstate + 1);
+  };
+  const countDown = () => {
+    setCount(count - 1);
+  };
+  return (
+    <>
+      <h3>{title}: {count}</h3>
+      <button onClick={countUp}>+</button>
+      <button onClick={countDown}>-</button>
+    </>
+  );
+};
+
+export default Example;
+```
 
 ## 055_ステートを複数のコンポーネントで管理しよう！
 [toTop](#)
+
+- 親コンポーネントで複数のステートを定義して、"ステートオブジェクト"と"setメソッド"を渡すと子コンポーネントで利用できる
+- [end source](./src/080_state_and_props/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import { useState } from "react";
+
+// POINT stateとpropsの利用ケース
+// コンポーネントが消滅する可能性がある時。
+// 特定のstateを複数の子コンポーネントで共有したいとき。
+
+const Example = () => {
+  const [toggle, setToggle] = useState(true);
+  const [countA, setCountA] = useState(0);
+  const [countB, setCountB] = useState(0);
+  const toggleComponent = () => {
+    setToggle((prev) => !prev);
+  };
+  return (
+    <>
+      <button onClick={toggleComponent}>toggle</button>
+      {toggle ? <Count key="A" title="A" count={countA} setCount={setCountA} /> : <Count key="B" title="B" count={countB} setCount={setCountB} />}
+    </>
+  );
+};
+const Count = ({ title, count, setCount }) => {
+  const countUp = () => {
+    setCount((prevstate) => prevstate + 1);
+  };
+  const countDown = () => {
+    setCount(count - 1);
+  };
+  return (
+    <>
+      <h3>
+        {title}: {count}
+      </h3>
+      <button onClick={countUp}>+</button>
+      <button onClick={countDown}>-</button>
+    </>
+  );
+};
+
+export default Example;
+```
 
 
 ## 056_【練習】ステートの受け渡し
 [toTop](#)
 
 - 複数階層のコンポーネントで、ステートを分離する練習を行う
-- サンプルコード：[Example.js](./src/090_practice_state_props/end/Example.js)
+
+- [end source](./src/090_practice_state_props/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -475,9 +687,8 @@ const Example = () => {
     );
   };
   
-export default Example;
-```
-
+  export default Example;
+  ```
 
 ## 057_セクションまとめ
 [toTop](#)

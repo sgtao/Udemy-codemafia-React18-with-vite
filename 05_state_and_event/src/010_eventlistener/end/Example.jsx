@@ -8,6 +8,7 @@ const Example = () => {
   }
 
   // const hello = () => { return 'hello react'};
+  // console.log(hello)
   
   return (
     <>
