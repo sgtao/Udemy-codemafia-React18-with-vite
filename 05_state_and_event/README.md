@@ -559,7 +559,30 @@ export default Example;
 
 ## 054_ステートとコンポーネントの関係
 [toTop](#)
+- ステートは、コンポネントに紐づいて、値を格納する箱を準備している
+  * `useState`で定義して、参照・更新を行う
+  * コンポーネントに紐づく値はそれぞれ独立して管理される
+  * Reactはコンポーネントツリーのどの位置に配置されているかでステートを判別する
+    * 同じ子コンポーネントでステートを独立するには、`key`属性を子コンポーネントにつける
+- 例えば複数のコンポーネントでステートを独立する場合：
+```jsx
+// POINT stateとコンポーネントの関係
+const Example = () => {
+  const [ toggle, setToggle ] = useState(true);
+  const toggleComponent = () => {
+    setToggle(prev => !prev);
+  }
+  return (
+    <>
+      <Count key="A" title="A"/>
+      <Count key="B" title="B"/>
+    </>
+  );
+}
+```
 
+### コード
+- 独立したステートを切り替えて使う例
 - [end source](./src/070_state_and_component/end/Example.jsx)
 - エントリーコンポーネント：
 ```jsx
@@ -692,4 +715,6 @@ const Example = () => {
 
 ## 057_セクションまとめ
 [toTop](#)
+- [動画コンテンツ](https://fujitsu.udemy.com/course/react-complete-guide/learn/lecture/33042226#overview)がよくまとまっています
+
 
