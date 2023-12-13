@@ -75,6 +75,8 @@ npm create vite@latest ${TARGET_DIRNAME} -- --template react
 export TARGET_DIRNAME="04_react_basic"
 rm -rf ${TARGET_DIRNAME}
 npm create vite@latest ${TARGET_DIRNAME} -- --template react
+# sometime need to answer to inquiry proceed
+#
 cd ${TARGET_DIRNAME}/
 rm -rf src
 cp -r ../00_references/99_react-guide-material/${TARGET_DIRNAME}/src .
@@ -110,8 +112,8 @@ for filename in ` find src -name "*.js" -print ` ; do ls $filename; done
 ${current_directory}/src/App.jsx
 21 |  const STORAGE_KEY = "rcg-current-lec-index";
 22 |  const DynamicLoader = ({ component }) => {
-23 |    const LazyComponent = lazy(() => import(`${component}`));
-   |                                            ^^^^^^^^^^^^^^
+23 |    const LazyComponent = lazy(() => import(/* @vite-ignore */ `${component}`));
+   |                                            ^^^^^^^^^^^^^^^^^↑を追記する
 24 |    return /* @__PURE__ */ jsxDEV(BaseErrorBoundary, { children: /* @__PURE__ */ jsxDEV(Suspense, { fallback: /* @__PURE__ */ jsxDEV("div", { children: "Loading..." }, void 0, false, {
 25 |      fileName: "src/App.jsx",
 The above dynamic import cannot be analyzed by Vite.
