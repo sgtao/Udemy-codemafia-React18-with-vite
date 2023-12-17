@@ -17,11 +17,15 @@ const Example = () => {
     <>
       <h3>配列の操作</h3>
       <ul>
-        {/* <li>{animals[0]}</li>
+        {/* */}
+        <li>{animals[0]}</li>
         <li>{animals[1]}</li>
-        <li>{animals[2]}</li> */}
-        {/* {animalList}
-        {helloAnimals} */}
+        <li>{animals[2]}</li>
+        {/* */}
+        {/*
+        */}
+        {animalList}
+        {helloAnimals}
         {/* POINT map関数はJSX内に記述可能 */}
         {animals.map((animal) => <li>Hello, {animal}</li>)}
       </ul>

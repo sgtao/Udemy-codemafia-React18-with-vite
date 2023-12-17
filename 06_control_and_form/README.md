@@ -25,32 +25,44 @@
 
 ## 059_配列をリスト表示
 [toTop](#)
-
-- サンプルコード：[020_list_and_key](./src/020_list_and_key/end/)
+- リスト表示する元データ（配列）は、for文でJSXの配列を作成
 ```jsx
+  const animalList = [];
+  for (const animal of animals) {
+    animalList.push(<li>{animal}</li>);
+  }
+```
+
+### ソースコード
+- [end source](./src/010_list_components/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+
 const animals = ["Dog", "Cat", "Rat"];
 
 const Example = () => {
+  // POINT for文でJSXの配列を作成
   const animalList = [];
   for (const animal of animals) {
     animalList.push(<li>{animal}</li>);
   }
 
+  // POINT map関数でJSXの配列を作成
   const helloAnimals = animals.map((animal) => {
     return <li>Hello {animal}</li>;
   });
 
   return (
     <>
+      <h3>配列の操作</h3>
       <ul>
-        {/*{animalList}  {helloAnimals} */}
-        {
-          /* POINT 子要素にKeyキーを設定 */
-          animals.map((animal) => (
-            /* map内のコンポーネントには `key`を付ける */
-            <li key={animal}>Hello, {animal}</li>
-          ))
-        }
+        {/* <li>{animals[0]}</li>
+        <li>{animals[1]}</li>
+        <li>{animals[2]}</li> */}
+        {/* {animalList}
+        {helloAnimals} */}
+        {/* POINT map関数はJSX内に記述可能 */}
+        {animals.map((animal) => <li>Hello, {animal}</li>)}
       </ul>
     </>
   );
@@ -63,6 +75,7 @@ export default Example;
 [toTop](#)
 
 ### なぜキーを付ける必要があるか？
+
 - 前提知識：
   * React は React 要素ツリ ー (厳密には Fiber ツリ ー )の差分検出処理をして DOM を更新している
   * 差分を検出した要素配下を再レンダリングする
@@ -71,20 +84,155 @@ export default Example;
 - キーありの場合：
   * 更新したキーのある要素のみを再レンダリングする
 
-<br>
+ 前提知識 | キーありの場合
+ -- | --
+ React は要素ツリーの差分検出してDOM更新 | キーのある要素が差分検出を助ける
+ ![image](./images/0601_ReactUpdateByDifferencialTree.png) | ![image](./images/0602_KeyHelpReactRecognition.png)
 
-- key を付ける際の注意点：
-  * キーには必ず一意の値を設定する。
-  * キーに設定した値は変更しない。
-  * 配列のインデックスはなるべく使わない。
-- サンプルコード：[024_why_key_unique](./src/024_why_key_unique/end)
+### key を付ける際の注意点：
+- キーには必ず一意の値を設定する。
+- キーに設定した値は変更しない。
+- 配列のインデックスはなるべく使わない。⇒画面で確認する
 
+### コード
+- [end source](./src/024_why_key_unique/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import "./Example.css";
+import { useState } from "react";
+
+const Example = () => {
+  const inputFact = () => ({
+    key: Math.floor(Math.random() * 1e3),
+    value: <input />,
+  });
+
+  const [inputs, setInputs] = useState([inputFact(), inputFact(), inputFact()]);
+
+  const unshiftInput = () => {
+    setInputs((prev) => [inputFact(), ...prev]);
+  };
+  return (
+    <>
+      <button onClick={unshiftInput}>先頭に追加</button>
+      <div className="flex">
+        <div>
+          <strong>{`key={ユニークキー}`}</strong>
+          <ul>
+            {inputs.map((input) => (
+              <li key={input.key}>
+                {input.key}: {input.value}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <strong>{`key={index}`}</strong>
+          <ul>
+            {inputs.map((input, index) => (
+              <li key={index}>
+                {input.key}: {input.value}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Example;
+```
 
 ## 061_【練習】リストにキーを設定してみよう
 [toTop](#)
 
-- サンプルコード：[030_practice_list/end](./src/030_practice_list/end/)
-- 練習コード：[030_practice_list/start](./src/030_practice_list/start/)
+### 練習問題
+- キーを設定したリスト表示を自分で書いて見てください。
+```jsx
+const Example = () => {
+  return (
+    <>
+      <h3>練習問題</h3>
+      <p>Profileコンポーネントを使用して、完成コードと同じ画面を作成してください。</p>
+      <p>また、Profileコンポーネント内のリスト表示部分のkeyを設定して、ワーニング表示がされないようにしてください。</p>
+      <ul>
+        {/* ここに記述 */}
+      </ul>
+    </>
+  );
+};
+ 
+export default Example; 
+```
+
+### 回答
+- [end source](./src/030_practice_list/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Profile from "./components/Profile";
+
+const persons = [
+  {
+    name: "Geo",
+    age: 18,
+    hobbies: ["sports", "music"],
+  },
+  {
+    name: "Tom",
+    age: 25,
+    hobbies: ["movie", "music"],
+  },
+  {
+    name: "Lisa",
+    age: 21,
+    hobbies: ["sports", "travel", "game"],
+  },
+];
+
+const Example = () => {
+  return (
+    <>
+      <ul>
+        {/* mapで各要素に特定の処理を行ったものを新しい配列とする */}
+        {persons.map((person) => (
+            /* リストにはkeyを設定することを忘れないように！ */
+            <li key={person.name}>
+            <Profile {...person} />
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default Example;
+```
+
+- `Profile`コンポーネント：
+```jsx
+const Profile = ({ name, age, hobbies }) => {
+  return (
+    <div>
+      <hr />
+      <div>Name: {name}</div>
+      <div>Age: {age}</div>
+      <div>
+        <div>Hobby:</div>
+        <ul>
+          {hobbies.map((hobby) => (
+            /* リストにはkeyを設定することを忘れないように！ */
+            <li key={hobby}>{hobby}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;
+```
+
 
 ## 062_配列のフィルターメソッドの使い方
 [toTop](#)
@@ -184,7 +332,7 @@ const Example = () => {
     const isMatch = animal.indexOf(filterVal) !== -1;
     return isMatch;
   });
-  
+
   return (
     <>
       <AnimalFilter filterState={[filterVal, setFilterVal]}/>
@@ -208,7 +356,7 @@ const Example = () => {
 
   const [val, setVal] = useState("");
   const clearVal = () => setVal("");
-  
+
   return (
     <div>
       <label htmlFor="456">ラベル</label>
@@ -384,7 +532,7 @@ import { useState } from "react";
 // POINT プルダウンの実装
 const Example = () => {
   const [selected, setSelected] = useState("Banana");
-  
+
   const OPTIONS = ["Apple", "Banana", "Cherry"];
 
   return (
