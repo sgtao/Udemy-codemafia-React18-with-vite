@@ -166,6 +166,69 @@ const Example = () => {
 export default Example; 
 ```
 
+#### 例）`Profile`コンポーネント：
+```jsx
+const Profile = ({ name, age, hobbies }) => {
+  return (
+    <div>
+      <hr />
+      <div>Name: {name}</div>
+      <div>Age: {age}</div>
+      <div>
+        <div>Hobby:</div>
+        <ul>
+          {hobbies.map((hobby) => (
+            /* リストにはkeyを設定することを忘れないように！ */
+            <li key={hobby}>{hobby}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;
+```
+
+#### 試行案：
+```jsx
+import Profile from './components/Profile';
+// persons define
+const persons = [
+  {
+    name: "Geo",
+    age: 18,
+    hobbies: ["sports", "music"],
+  },
+  ...
+];
+
+const Example = () => {
+  return (
+    <>
+      <h3>練習問題</h3>
+      <p>Profileコンポーネントを使用して、完成コードと同じ画面を作成してください。</p>
+      <p>また、Profileコンポーネント内のリスト表示部分のkeyを設定して、ワーニング表示がされないようにしてください。</p>
+      <ul>
+        {/* ここに記述 */
+          persons.map((person) => {
+            <li key={person.name}>
+              <Person
+                name={person.name}
+                age={person.age}
+                hobbies={person.hobbies}
+              />
+            </li>
+          })
+        }
+      </ul>
+    </>
+  );
+}
+
+export default Example;
+```
+
 ### 回答
 - [end source](./src/030_practice_list/end/Example.jsx)
 - エントリーコンポーネント：
