@@ -300,20 +300,289 @@ export default Profile;
 ## 062_配列のフィルターメソッドの使い方
 [toTop](#)
 
-- サンプルコード：[040_list_and_filter](./src/040_list_and_filter/end/)
+### `filter`メソッド
+- 参考セクション：[015_配列のmap、filterメソッドについて学ぼう](../03_js_basic/README.md#015_配列のmapfilterメソッドについて学ぼう)
+
+```jsx
+// 初期配列
+const arry = [10, 20, 30, 40];
+// mapで繰り返し処理
+const newArry2 = arry.map(val => val * 2);
+console.log(newArry2)
+// (4) [20, 40, 60, 80]
+
+// filterで絞り込み
+// return値がTrueのものだけ抽出
+// const newArry3 = newArry2.filter((val) => {
+//   const is50Over = (val > 50);
+//   return is50Over;
+// });
+// 上と同義の記述
+const newArry3 = newArry2.filter(val => val > 50);
+
+console.log(newArry3)
+// (2) [60, 80]
+
+// map と filter で連続して演算
+const newArray.map(val => val * 2).filter(val => val > 50);
+console.log(newArry)
+// (2) [60, 80]
+```
+
+### `filter`＋`map`メソッドで、キーワードで絞り込んで一覧で示す
+```jsx
+const Example = () => {
+  const animals = ["Dog", "Cat", "Rat"];
+  const filterVal = "Do";
+  const filterdAnimals = animals.filter((animal) => {
+    const isMatch = animal.indexOf(filterVal) !== -1; // 不一致(-1)以外
+    return isMatch;
+  })
+  return (
+    <ul>
+      {
+        filterdAnimals.map(animal => {
+          <li key={animal}>{animal}</li>
+        });
+      }
+    </ul>
+  );
+}
+
+```
+
+
+### ソースコード
+- [end source](./src/040_list_and_filter/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import { useState } from "react";
+
+const animals = ["Dog", "Cat", "Rat"];
+// POINT filterメソッドの使い方
+const Example = () => {
+  const [filterVal, setFilterVal] = useState("");
+  return (
+    <>
+      <h3>配列のフィルター</h3>
+      <input type="text" value={filterVal} onChange={(e) => setFilterVal(e.target.value)} />
+      <ul>
+        {animals
+          .filter(animal => {
+            const isMatch = animal.indexOf(filterVal) !== -1;
+            console.log(animal.indexOf(filterVal))
+            return isMatch
+          })
+          .map((animal) => (
+          <li key={animal}>{animal}</li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default Example;
+```
 
 ## 063_【練習】フィルターメソッドの使い方を練習してみよう
 [toTop](#)
 
-- サンプルコード：[050_practice_filter/end](./src/050_practice_filter/end/)
-- 練習コード：[050_practice_filter/start](./src/050_practice_filter/start/)
+### 問題：
+- 入力欄を設置して、入力値と名前が一致したもののみ表示する仕組みを作成してください。
+- 初期コード：
+```jsx
+import Profile from "./components/Profile";
+
+const persons = [
+  {
+    name: "Geo",
+    age: 18,
+    hobbies: ["sports", "music"],
+  },
+  {
+    name: "Tom",
+    age: 25,
+    hobbies: ["movie", "music"],
+  },
+  {
+    name: "Lisa",
+    age: 21,
+    hobbies: ["sports", "travel", "game"],
+  },
+];
+
+const Example = () => {
+  return (
+    <>
+      <ul>
+        {/* mapで各要素に特定の処理を行ったものを新しい配列とする */}
+        {persons.map((person) => (
+            /* リストにはkeyを設定することを忘れないように！ */
+            <li key={person.name}>
+            <Profile {...person} />
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default Example;
+```
+
+### 試行案：
+- `Example`コンポーネントの変更
+```jsx
+import {useState} from react;
+... // 初期配列設定など
+
+const Example = () => {
+  const [filterVal, setFilterVal] = useState("");
+  const changeFilter = (e) => {
+    setFilterVal(e.target.value);
+  }
+  return (
+    <>
+      <input type="text" value={filterVal} onChange={changeFilter} />
+      <ul>
+        {/* filter + mapで絞り込んだ配列を一覧表示 */}
+        {persons.filter(person => {
+            return (person.indexOf(filterval) !== -1);
+          }).map((person) => (
+            /* リストにはkeyを設定することを忘れないように！ */
+            <li key={person.name}>
+              <Profile {...person} />
+            </li>
+          ))
+        }
+      </ul>
+    </input>
+  );
+};
+```
+
+### 回答：
+- [end source](./src/050_practice_filter/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Profile from "./components/Profile";
+import { useState } from "react";
+
+const persons = [
+  {
+    name: "Geo",
+    age: 18,
+    hobbies: ["sports", "music"],
+  },
+  {
+    name: "Tom",
+    age: 25,
+    hobbies: ["movie", "music"],
+  },
+  {
+    name: "Lisa",
+    age: 21,
+    hobbies: ["sports", "travel", "game"],
+  },
+];
+
+const Example = () => {
+  const [filterVal, setFilterVal] = useState("");
+  return (
+    <>
+      <input type="text" value={filterVal} onChange={(e) => setFilterVal(e.target.value)} />
+      <ul>
+        {persons
+        // filterを追加
+        .filter(person => {
+          const isMatch = person.name.indexOf(filterVal) !== -1;
+          return isMatch
+        })
+        .map((person) => (
+          <li key={person.name}>
+            <Profile {...person} />
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+export default Example;
+```
+
+- `Profile`コンポーネント：
+```jsx
+const Profile = ({ name, age, hobbies }) => {
+  return (
+    <div>
+      <hr />
+      <div>Name: {name}</div>
+      <div>Age: {age}</div>
+      <div>
+        <div>Hobby:</div>
+        <ul>
+          {hobbies.map((hobby) => (
+            <li key={hobby}>{hobby}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;
+```
+
 
 ## 064_条件分岐を設ける方法まとめ
 [toTop](#)
 
-- サンプルコード：[060_conditional_render](./src/060_conditional_render/end/)
 - if文、三項演算子、そのほか、(特定の条件の場合は)&&演算子やnull合体演算子 の実装方法がある
   * おすすめは三項演算子（コードの修正が発生した場合の変更量が減るため）
+### `if`文
+```jsx
+if(animal === "Dog") {
+  return <li key={animal}>{animal}★</li>
+} else {
+  return <li key={animal}>{animal}</li>
+}
+```
+### 3項演算子
+- 上記コードと同義。重複部分をまとめられる
+```jsx
+<li key={animal}>{
+  animal + (animal === "Dog"
+    ? "★"
+    : "")
+}</li>
+```
+### `&&`：AND条件
+- 上記コードと同義。
+  * 後半`(animal === "Dog" && "★")`が、条件がTrueの時のみ`"★"`を表示
+```jsx
+<li key={animal}>{
+  animal + (animal === "Dog" && "★")
+}
+{
+  // Reactでは下の記述で分離させることもある
+  // {animal}
+  // {(animal === "Dog" && "★")}
+}
+</li>
+```
+
+### `??`：null合体演算子
+- `null`型演算子は、`null`もしくは`undefined`かどうかを判定する
+```jsx
+// A ?? B
+// 変数Aがnullかundefinedのとき、Bとなる
+const animalStr = animal ?? "null,undefinedでした";
+```
+
+### ソースコード
+- [end source](./src/060_conditional_render/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -344,24 +613,21 @@ const Example = () => {
             return (
               <li key={animal}>
                 {
-                  // POINT if文のばあい
+                  // POINT if文
                   // if(animal === "Dog") {
                   //   return <li key={animal}>{animal}★</li>
                   // } else {
                   //   return <li key={animal}>{animal}</li>
                   // }
-
-                  // POINT 3項演算子のばあい
-                  animal + (animal === "Dog" ? "★" : "")
-
-                  // POINT null合体演算子のばあい
-                  // animal ?? "null,undefinedでした"
-
+                  // POINT 3項演算子
+                  // animal + (animal === "Dog"
+                  //  ? "★"
+                  //  : "")
+                  // POINT null合体演算子
+                  animal ?? "null,undefinedでした"
                 }
                 {/* POINT &&演算子 */}
-                {
-                    // animal === "Dog" && "★"
-                }
+                {animal === "Dog" && "★"}
               </li>
             );
           })}
@@ -372,12 +638,14 @@ const Example = () => {
 
 export default Example;
 ```
+
 ## 065_コンポーネントのリファクタリング
 [toTop](#)
 
-- サンプルコード：[070_refactor_components](./src/070_refactor_components/end/)
 - コンポーネント毎にファイル分割する
-- ルートコンポネントを下のようにしたい
+### ソースコード
+- [end source](./src/070_refactor_components/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 // POINT コンポーネントのリファクタリング
 
@@ -405,6 +673,42 @@ const Example = () => {
 };
 
 export default Example;
+```
+
+- `AnimalFilter`コンポーネント：
+```jsx
+const AnimalFilter = ({ filterState }) => {
+  const [filterVal, setFilterVal] = filterState;
+
+  return (
+    <input
+      type="text"
+      value={filterVal}
+      onChange={(e) => setFilterVal(e.target.value)}
+    />
+  );
+};
+export default AnimalFilter;
+```
+
+- `AnimalList`コンポーネント：
+```jsx
+import AnimalItem from "./AnimalItem";
+const AnimalList = ({ animals }) => {
+  if (animals.length === 0) {
+    return <h3>アニマルが見つかりません。</h3>;
+  }
+
+  return (
+    <ul>
+      {animals.map((animal) => {
+        return <AnimalItem animal={animal} key={animal} />;
+      })}
+    </ul>
+  );
+};
+
+export default AnimalList;
 ```
 
 ## 066_【Form】inputとtextareaの作成方法
