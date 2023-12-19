@@ -714,7 +714,8 @@ export default AnimalList;
 ## 066_【Form】inputとtextareaの作成方法
 [toTop](#)
 
-- サンプルコード：[080_input_textarea](./src/080_input_textarea/end/)
+- [end source](./src/080_input_textarea/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -754,8 +755,8 @@ export default Example;
 ## 067_【Form】ラジオボタンの作成方法
 [toTop](#)
 
-
-- サンプルコード：[090_radio](./src/090_radio/end/)
+- [end source](./src/090_radio/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -781,18 +782,38 @@ const Example = () => {
           </label>
         );
       })}
+      {/* <label>
+        <input
+          type="radio"
+          value="Banana"
+          checked={fruit === "Banana"}
+          onChange={onChange}
+        />
+        Banana
+      </label>
+      <label>
+        <input
+          type="radio"
+          value="Cherry"
+          checked={fruit === "Cherry"}
+          onChange={onChange}
+        />
+        Cherry
+      </label> */}
       <h3>私は{fruit}がたべたい</h3>
     </>
   );
 };
 
 export default Example;
+
 ```
 
 ## 068_【Form】チェックボックスの作成方法
 [toTop](#)
 
-- サンプルコード：[100_single_checkbox](./src/100_single_checkbox/end/)
+- [end source](./src/100_single_checkbox/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -828,10 +849,35 @@ export default Example;
 [toTop](#)
 
 - 複数のチェックボックスを評価したい場合、filter関数でチェックボックス全体を評価する
-  * forEachバージョン
-  * filter + forEachバージョン
-  * filter + reduceバージョン
-- サンプルコード：[110_multi_checkbox](./src/110_multi_checkbox/end/)
+  * forEach バージョン
+  * filter + forEach バージョン
+  * filter + reduce バージョン
+### `reduce`メソッド
+* 配列のそれぞれの要素に対して、「縮小」コールバック関数を呼び出し、直前の要素における計算結果の返値を渡しながら計算する。
+  * 構文：
+  ```jsx
+  reduce(callbackFn)
+  reduce(callbackFn, initialValue)
+  // callbackFn( 前の要素の演算結果、現要素の値 )
+  ```
+* 簡単な例は配列の合計を計算する（参考：MDN『[Array.prototype.reduce()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce)』）
+```jsx
+const array1 = [1, 2, 3, 4];
+
+// 0 + 1 + 2 + 3 + 4
+const initialValue = 0;
+const sumWithInitial = array1.reduce(
+  (accumulator, currentValue) => accumulator + currentValue,
+  initialValue,
+);
+
+console.log(sumWithInitial);
+// Expected output: 10
+```
+
+### ソースコード
+- [end source](./src/110_multi_checkbox/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -856,6 +902,19 @@ const Example = () => {
     });
 
     setFruits(newFruits);
+    // forEachバージョン
+    // let sumVal = 0;
+    // newFruits.forEach(fruit => {
+    //   if(fruit.checked) {
+    //     sumVal = sumVal + fruit.value;
+    //   }
+    // });
+
+    // filter + forEachバージョン
+    // let sumVal = 0;
+    // newFruits
+    //   .filter((fruit) => fruit.checked)
+    //   .forEach((fruit) => (sumVal = sumVal + fruit.value));
 
     // filter + reduceバージョン
     let sumVal = newFruits
@@ -892,7 +951,9 @@ export default Example;
 ## 070_【Form】プルダウンの作成方法
 [toTop](#)
 
-- サンプルコード：[120_select](./src/120_select/end/)
+### ソースコード
+- [end source](./src/120_select/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState } from "react";
 
@@ -905,10 +966,14 @@ const Example = () => {
   return (
     <>
       <select
+        {/* Reactではvalue属性に初期状態の値を指定する。HTMLではoption要素に`selected`を付けるけど、異なる*/}
         value={selected}
         onChange={(e) => setSelected(e.target.value)}
       >
         {OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+        {/* <option value="Apple">Apple</option>
+        <option value="Banana">Banana</option>
+        <option value="Cherry">Cherry</option> */}
       </select>
       <div>選択された果物：{selected}</div>
     </>
@@ -921,19 +986,115 @@ export default Example;
 ## 071_Todoアプリを作ってみよう
 [toTop](#)
 
-- サンプルコード：[130_reminder/end/](./src/130_reminder/end/)
-- 練習コード：[130_reminder/start/](./src/130_reminder/start/)
-
-- Formコンポーネントで、submitすると画面リロードが実行されて入力内容が消えてしまう
+- `Form`コンポーネントで、submitすると画面リロードが実行されて入力内容が消えてしまう
   * `form`要素は（ブラウザのディフォルト機能により）、`action`属性に指定したURLにリクエストを送って、そのページに遷移する機能がある
-  * このブラウザの機能を`preventDefault()`で止めてリロード抑止すると入力内容が残る
+  * このブラウザの機能を`e.preventDefault()`で止めてリロード抑止すると入力内容が残る
+* `Form`コンポーネント内の`id`付与時、ランダムな４桁番号を降っている
+  * 例）`const id = Math.floor(Math.random() * 1e5);`
+  * ID生成は、[パッケージNanoid](https://github.com/ai/nanoid#readme) の利用でもよい
+  * サンプルコード：
+  ```jsx
+  import { nanoid } from 'nanoid'
+  model.id = nanoid() //=> "V1StGXR8_Z5jdHi6B-myT"
+  ```
+
+### ソースコード
+- [end source](./src/130_reminder/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT Reminder(Todoアプリ)の作り方
+import Todo from "./components/Todo"
+
+const Example = () => {
+  return (
+    <>
+      <h2>Reminder</h2>
+      <Todo />
+    </>
+  );
+};
+
+export default Example;
+```
+
+- `Todo`コンポーネント：
+```jsx
+import { useState } from "react"
+import List from "./List"
+import Form from "./Form"
+
+const Todo = () => {
+  const todosList = [
+    {
+      id: 1,
+      content: "店予約する",
+    },
+    {
+      id: 2,
+      content: "卵買う",
+    },
+    {
+      id: 3,
+      content: "郵便出す",
+    },
+  ];
+
+  const [ todos, setTodos ] = useState(todosList);
+
+  const deleteTodo = (id) => {
+    const newTodos = todos.filter((todo) => {
+      return todo.id !== id;
+    });
+
+    setTodos(newTodos);
+  }
+
+  const createTodo = (todo) => {
+    setTodos([...todos, todo]);
+  }
+
+  return (
+    <>
+      <List todos={todos} deleteTodo={deleteTodo}/>
+      <Form createTodo={createTodo}/>
+    </>
+  )
+};
+export default Todo;
+```
+
+- `List`コンポーネント：
+```jsx
+const List = ({todos, deleteTodo}) => {
+    const complete = (id) => {
+        deleteTodo(id)
+    }
+    return (
+        <div>
+            {todos.map(todo => {
+                return (
+                    <div key={todo.id}>
+                        <button onClick={() => complete(todo.id)}>完了</button>
+                        <span>{todo.content}</span>
+                    </div>
+                )
+            })}
+        </div>
+    );
+}
+
+export default List;
+```
+
+- `Form`コンポーネント：
 ```jsx
 import { useState } from "react";
 const Form = ({ createTodo }) => {
   const [enteredTodo, setEnteredTodo] = useState("");
 
   const addTodo = (e) => {
-    e.preventDefault(); // ブラウザのリロードを抑止する
+    // Form要素のaction(Enterキー)によるブラウザのリロードを抑止する
+    e.preventDefault();
 
     const newTodo = {
       id: Math.floor(Math.random() * 1e5),
