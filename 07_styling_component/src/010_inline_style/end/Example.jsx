@@ -24,7 +24,8 @@ const Example = () => {
   /* POINT style属性に適応させるスタイルをオブジェクトで記述します */
   const style = {
     margin: "auto",
-    "border-radius": "9999px",
+    // "border-radius": "9999px",
+    borderRadius: "9999px",
     border: "none",
     display: "block",
 
