@@ -245,7 +245,7 @@ export default Example;
 
 ### ライブラリインストール
 ```sh
-npm i styled-components -S
+pnpm i styled-components -S
 ```
 
 ### 実装内容
@@ -417,7 +417,7 @@ const StyledOliveButton = styled(StyledButton)`
 
 - ライブラリインストール方法
 ```sh
-npm i @chakra-ui/react @emotion/react @emotion/styled framer-motion
+pnpm i @chakra-ui/react @emotion/react @emotion/styled framer-motion react-icons -S
 ```
 
 - `create-react-app`で詠み込む場合
