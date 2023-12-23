@@ -34,7 +34,7 @@ const Form = ({ createTodo }) => {
       status: "info",
       duration: 3000,
       isClosable: true,
-    });  
+    });
   };
 
   return (

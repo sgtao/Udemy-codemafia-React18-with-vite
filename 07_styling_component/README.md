@@ -511,8 +511,6 @@ const Example = () => {
 export default Example;
 ```
 
-
-
 ### ソースコード
 - [end source](./src/045_practice_css_in_js/end/Example.jsx)
 - エントリーコンポーネント：
@@ -606,14 +604,16 @@ export default Example;
 ## 081_【付録】ReactでのCSSフレームワーク【Part．1】
 [toTop](#)
 
-- CSSフレームワークの紹介
-  - ChakuraUI：スタイリングされたコンポーネント単位で利用する
-  - MaterialUI：（同情）
-  - Bootstrap5：要素にクラス名を付けてスタイリングする
-    * Banilla JavaScriptと同じように使える
-  - Bluma：（同上）
-  - Tailwind CSS：（同上）ただし、細分化されたクラス名を利用できる
+- CSSフレームワークを使ったデザインの適用方法の紹介
+  - [ChakuraUI](https://chakra-ui.com/) ：スタイリングされたコンポーネント単位で利用する
+  - [MaterialUI](https://mui.com/) ：（同上）
+  - [Bootstrap5](https://getbootstrap.jp/docs/5.3/getting-started/introduction/) ：要素にクラス名を付けてスタイリングする
+    * スタイリングの当て方は、Vanilla JavaScriptと同じようになる
+  - [Bluma](https://bulma.io/) ：Botstrapと同様にクラスを追加してスタイリング
+  - [Tailwind CSS](https://tailwindcss.com/) ：クラス追加でスタイリングでき、細分化されたクラス名を利用できる
+    * 細かすぎるので、[チートシート](https://coliss.com/articles/build-websites/operation/css/tailwind-css-cheat-sheet.html)を活用したほうがよさそう
 
+- CSSフレームワークは、コンポーネントを利用するタイプ と クラス名を指定するタイプ がある
 
 ## 082_【付録】ChakraUIを使ってみよう【Part．2】
 [toTop](#)
@@ -625,7 +625,8 @@ export default Example;
 
 - ライブラリインストール方法
 ```sh
-pnpm i @chakra-ui/react @emotion/react @emotion/styled framer-motion react-icons -S
+pnpm i @chakra-ui/react @emotion/react @emotion/styled framer-motion -S
+pnpm i react-icons -S # react Icon使うため
 ```
 
 - `create-react-app`で詠み込む場合
@@ -633,6 +634,8 @@ pnpm i @chakra-ui/react @emotion/react @emotion/styled framer-motion react-icons
 npx create-react-app my-app --template @chakra-ui
 # npx create-react-app my-app --template @chakra-ui/typescript # TypeScript利用の場合
 ```
+  * `vite`向けテンプレートは公式からは出て内容でした@'23.12.23
+
 
 ### 利用方法
 - インポートは、`@chakra-ui/react`から詠み込む
@@ -659,9 +662,202 @@ const Example = () => {
 export default Example;
 ```
 
-
-
-
 ## 083_【付録】ChakraUIを使ってみよう【Part．3】
 [toTop](#)
 
+
+### ソースコード
+- [end source](./src/050_chakra_ui/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+/* POINT Chakra UIのインポート
+https://chakra-ui.com/
+*/
+import { ChakraProvider } from "@chakra-ui/react";
+
+import Todo from "./components/Todo";
+
+const Example = () => {
+  // POINT Chakra UIを使用するためにChakraProviderでラップする
+  return (
+    <>
+      <ChakraProvider>
+        <Todo />
+      </ChakraProvider>
+    </>
+  );
+};
+
+export default Example;
+```
+
+- `Todo`コンポーネント：
+```jsx
+import { useState } from "react";
+// POINT Chakra UIのホームページから使用したいコンポーネントを見つけてインポート
+import { VStack, Heading } from "@chakra-ui/react";
+
+import List from "./List";
+import Form from "./Form";
+
+const Todo = () => {
+  const todosList = [
+    {
+      id: 1,
+      content: "店予約する",
+    },
+    {
+      id: 2,
+      content: "卵買う",
+    },
+    {
+      id: 3,
+      content: "郵便出す",
+    },
+  ];
+
+  const [todos, setTodos] = useState(todosList);
+
+  const deleteTodo = (id) => {
+    const newTodos = todos.filter((todo) => {
+      return todo.id !== id;
+    });
+
+    setTodos(newTodos);
+  };
+
+  const createTodo = (todo) => {
+    setTodos([...todos, todo]);
+  };
+
+  return (
+    <VStack p="10" spacing="10">
+      <Heading color="blue.200" fontSize="5xl">
+        Reminder
+      </Heading>
+      <List todos={todos} deleteTodo={deleteTodo} />
+      <Form createTodo={createTodo} />
+    </VStack>
+  );
+};
+export default Todo;
+```
+
+- `List`コンポーネント：
+```jsx
+import { VStack, StackDivider, HStack, IconButton, Text } from "@chakra-ui/react";
+
+// POINT react-iconsからアイコンをインポート
+import { VscCheck } from "react-icons/vsc";
+
+const List = ({ todos, deleteTodo }) => {
+  const complete = (id) => {
+    deleteTodo(id);
+  };
+  return (
+    <VStack
+      divider={<StackDivider />}
+      width="80%"
+      bgColor="white"
+      // color={{ sm: 'red.600', md: 'blue.600', lg: 'green.500', xl: 'red.600' }}
+      borderColor="blackAlpha.100"
+      borderWidth="1px"
+      borderRadius="3px"
+      p={5}
+      alignItems="start"
+    >
+      {todos.map((todo) => {
+        return (
+          <HStack key={todo.id} spacing="5">
+            <IconButton
+              onClick={() => complete(todo.id)}
+              icon={<VscCheck />}
+              isRound
+              bgColor="cyan.100"
+              opacity="0.5"
+            >
+              完了
+            </IconButton>
+            <Text>{todo.content}</Text>
+          </HStack>
+        );
+      })}
+    </VStack>
+  );
+};
+
+export default List;
+```
+
+- `Form`コンポーネント：
+```jsx
+import { useState } from "react";
+import { HStack, Input, Button, useToast } from "@chakra-ui/react";
+
+const Form = ({ createTodo }) => {
+  const [enteredTodo, setEnteredTodo] = useState("");
+
+  const toast = useToast();
+
+  const addTodo = (e) => {
+    e.preventDefault();
+
+    if (!enteredTodo) {
+      toast({
+        title: "新しいタスクを入力してください",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const newTodo = {
+      id: Math.floor(Math.random() * 1e5),
+      content: enteredTodo,
+    };
+
+    createTodo(newTodo);
+
+    setEnteredTodo("");
+
+    toast({
+      title: "新しいタスクを追加しました！",
+      description: enteredTodo,
+      status: "info",
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
+  return (
+    <form onSubmit={addTodo}>
+      <HStack>
+        {/* POINT ChakraのInputコンポーネントを使う  */}
+        <Input
+          placeholder="新しいタスク"
+          _placeholder={{ opacity: "0.3", color: "gray.500" }}
+          size="lg"
+          p={3}
+          bgColor="white"
+          variant="flushed"
+          value={enteredTodo}
+          onChange={(e) => setEnteredTodo(e.target.value)}
+        />
+        <Button
+          colorScheme="blue"
+          size="md"
+          bgColor="white"
+          variant="outline"
+          px={7}
+          type="submit"
+        >
+          追加
+        </Button>
+      </HStack>
+    </form>
+  );
+};
+
+export default Form;
+```
