@@ -102,6 +102,9 @@ for filename in ` find src -name "*.js" -print ` ; do ls $filename; done
 # convert to UTF file
 # for filename in `find src -name "*.jsx"` ; do ls $filename; nkf_to_utffile $filename; done
 # for filename in `find src -name "*.css"` ; do ls $filename; nkf_to_utffile $filename; done
+#
+# copy previous Memo
+# cp ../00_references/11_Udemy_React18-complete-guide/${TARGET_DIRNAME}/README.md .
 ```
 
 #### Warningメッセージについて
