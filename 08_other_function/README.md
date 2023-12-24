@@ -18,10 +18,42 @@
 
 ## 084_セクション紹介
 [toTop](#)
-- このセクションでは、つうじょうのReactではおこなわない、DOM そうさについてしょうかい
+- このセクションでは、通常のReactでは行いが、`UseRef`で実現するDOM 操作について紹介
 
 ## 085_【createPortal】モーダルの作り方
 [toTop](#)
+
+- `createPortal(子、DOM要素)`により、ポータルの子要素を直接の親要素以外の別DOM要素にマウントできる
+  * 例：親要素の親要素などで、モーダル画面を作成できる
+
+- 定義方法：
+```jsx
+import { useState } from "react";
+import { createPortal } from "react-dom";
+import Modal from "./components/Modal";
+
+/* POINT createPortalの使い方
+第一引数: React の子要素としてレンダー可能なもの （要素、文字列、フラグメント、コンポーネントなど）
+第二引数: レンダー先のDOM要素
+*/
+const ModalPortal = ({ children }) => {
+  const target = document.querySelector(".container.end");
+
+  // 第一引数（children（コンポーネント））を第二引数（target）にマウントする
+  return createPortal(children, target);
+};
+```
+
+- 利用例：
+```jsx
+      {modalOpen && (
+        <ModalPortal>
+          <Modal handleCloseClick={() => setModalOpen(false)} />
+        </ModalPortal>
+      )}
+```
+
+### ソースコード
 
 - [end source](./src/010_portals/end/Example.jsx)
 - エントリーコンポーネント：
@@ -69,9 +101,83 @@ export default Example;
 ## 086_【Bubbling】Portalを使う際の注意点！
 [toTop](#)
 
+- Portalを使う際の注意点！：イベントのバブリング
+  * 例：子要素のクリックイベントが親要素のイベントに波及する
+  * 親要素で、`onClick()`を定義していると、子要素のクリックイベント（モーダル表示）の際に親要素のクリックイベントも発生する
 
 ## 087_【練習＆解答】createPortalでトーストを作成してみよう
 [toTop](#)
+
+### 練習問題：トーストの作成（createPortal）
+- ボタンを押すと.container.start要素にマウントされて、表示されるトーストを作成してください。
+  * トーストにはToastコンポーネントを使用してください。
+
+- [start source](./src/020_practice_portals/start/Example.jsx))
+- 問題：
+```jsx
+import { useState } from "react";
+import Toast from "./components/Toast";
+
+const Example = () => {
+  const [toastOpen, setToastOpen] = useState(false);
+
+  return (
+    <div>
+      <h3>
+        トーストの作成（createPortal）
+      </h3>
+      <p>ボタンを押すと.container.start要素にマウントされて、表示されるトーストを作成してください。トーストにはToastコンポーネントを使用してください。</p>
+
+      <div className="container start"></div>
+      
+      <button
+        type="button"
+        onClick={() => setToastOpen(true)}
+        disabled={toastOpen}
+      >
+        トーストを表示する
+      </button>
+      {toastOpen && (
+          <Toast
+            visible={toastOpen}
+            handleCloseClick={() => setToastOpen(false)}
+          />
+      )}
+    </div>
+  );
+};
+
+export default Example;
+```
+
+### 試案：
+- `createPortal`を追加
+```jsx
+import { createPortal } from "react-dom";
+const ToastPortal = ({ children }) => {
+  const target = document.querySelector(".container.end");
+  return createPortal(children, target);
+};
+...
+      <button
+        type="button"
+        onClick={() => setToastOpen(true)}
+        disabled={toastOpen}
+      >
+        トーストを表示する
+      </button>
+      {toastOpen && (
+        <ToastPortal>
+          <Toast
+            visible={toastOpen}
+            handleCloseClick={() => setToastOpen(false)}
+          />
+        </ToastPortal>
+      )}
+```
+
+
+### ソースコード
 
 - [end source](./src/020_practice_portals/end/Example.jsx)
 - エントリーコンポーネント：
