@@ -607,6 +607,13 @@ export default Example;
 ## 093_【練習＆解答】refの使い方
 [toTop](#)
 
+### 練習問題
+- `vite`では動かない
+- [start source](./src/060_practice_ref/start/Example.jsx)
+- useRef、useImperativeHandle、forwardRefを使って完成系の動画再生機能を作成してください。
+  * ※useImperativeHandleでplay(再生)、stop(停止)メソッドを定義すること。
+
+### 解答：ソースコード
 - [end source](./src/060_practice_ref/end/Example.jsx)
 - エントリーコンポーネント：
 ```jsx
