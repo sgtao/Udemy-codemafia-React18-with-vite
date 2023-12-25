@@ -525,6 +525,9 @@ const Case3 = () => {
 ## 091_【forwardRef】他のコンポーネントのDOMにアクセスする方法
 [toTop](#)
 
+- `useRef`で定義したRef変数は子コンポーネントに引数として渡して利用できる
+
+### ソースコード
 - [end source](./src/040_forwardRef/end/Example.jsx)
 - エントリーコンポーネント：
 ```jsx
@@ -558,6 +561,10 @@ export default Example;
 ## 092_【useImperativeHandle】refへのアクセスを限定する方法
 [toTop](#)
 
+- `useRef`で定義したRef変数を使ったハンドラをカスタマイズすることをできる
+  * 実装次第でアクセスを限定できる
+
+### ソースコード
 - [end source](./src/050_useImperativeHandle/end/Example.jsx)
 - エントリーコンポーネント：
 ```jsx
