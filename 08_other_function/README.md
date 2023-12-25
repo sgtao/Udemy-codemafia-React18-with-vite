@@ -245,11 +245,83 @@ const Toast = ({ visible, handleCloseClick }) => {
 export default Toast;
 ```
 
+- `Toast.css`
+```css
+.App-end .container .toast {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px;
+  transform: translateY(100%); /* 画面外に配置 */
+  z-index: 100; /* 最前面に表示 */
+  display: none;
+}
+.App-end .container .toast.is-visible {
+  transform: translateY(0); /* 画面内に移動 */
+  transition: transform 0.3s ease-in;
+  display: block;
+}
+
+.App-end .container .toast__content {
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 8px gray;
+  padding: 12px 50px;
+}
+
+.App-end .container .toast__button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+  appearance: none;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  font-size: 30px;
+}
+
+.App-end .container .toast__button:active {
+  opacity: 0.3;
+}
+```
 
 ## 088_【useRef】refでDOMを直接操作してみよう
 [toTop](#)
 
+- `useRef` を使うことでDOM に直接指示ができる
+  * 操作したいDOM (要素)の`ref`属性を変数に取得
+  * 指示はDOM メソッドを呼び出す
+  * `fucus()`メソッド
+```jsx
+import { useState, useRef } from "react";
+...
+const Case1 = () => {
+  const [value, setValue] = useState("");
+  const inputRef = useRef(); // `inputRef`で操作する
 
+  return (
+    <div>
+      <h3>ユースケース1</h3>
+      <input
+        type="text"
+        ref={inputRef} {/* `inputRef`経由で操作する */}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+      {/* イベントハンドラー内で`inputRef`に`focus`指示をする */}
+      <button onClick={() => inputRef.current.focus()}>
+        インプット要素をフォーカスする
+      </button>
+    </div>
+  );
+```
+
+### ソースコード
 - [end source](./src/030_useRef/end/Example.jsx)
 - エントリーコンポーネント：
 ```jsx
@@ -273,6 +345,7 @@ const Case1 = () => {
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />
+      {/* イベントハンドラー内で`inputRef`に`focus`指示をする */}
       <button onClick={() => inputRef.current.focus()}>
         インプット要素をフォーカスする
       </button>
@@ -367,9 +440,87 @@ export default Example;
 ## 089_【useRef】refで動画プレイヤーを作成してみよう
 [toTop](#)
 
+- 動画の再生・停止に`useRef`を利用：
+```jsx
+// POINT 動画の再生・停止を制御
+const Case2 = () => {
+  const [playing, setPlaying] = useState(false);
+  const videoRef = useRef(); // `videoRef`で操作
+
+  return (
+    <div>
+      <h3>ユースケース2</h3>
+      {/* video 要素のref属性に `videoRef` を紐づける*/}
+      <video style={{ maxWidth: "100%" }} ref={videoRef}>
+        <source src="./sample.mp4"></source>
+      </video>
+      <button
+        onClick={() => {
+          if (playing) {
+            videoRef.current.pause();
+          } else {
+            videoRef.current.play();
+          }
+
+          setPlaying((prev) => !prev);
+        }}
+      >
+        {playing ? "Stop" : "Play"}
+      </button>
+    </div>
+  );
+};
+```
+
 ## 090_【useRef】refとは？refとstateの違い
 [toTop](#)
 
+- `useRef`とはどういったものか？
+  * 再レンダリングを発生させずに値を保持できる方法
+  ```jsx
+  const ref = useRef(initalValue)
+  ```
+- stateとrefの違い：
+  * stateで値を保持すると、変化によって再レンダリングする（DOM操作に使えない）
+  * refでは再レンダリングを起こさない
+  * サンプルコード：
+```jsx
+const createTimeStamp = () => new Date().getTime();
+/* POINT useRefは再レンダリングされません。
+書き換え可能な情報としてコンポーネントに保持させておくことができます。
+state は更新されるごとに再レンダーされますが、refオブジェクトの中身が変わっても再レンダーが走ることはありません。
+*/
+const Case3 = () => {
+  const [timeStamp, setValue] = useState(createTimeStamp());
+  const ref = useRef(createTimeStamp());
+
+  const updateState = () => {
+    setValue(createTimeStamp());
+  };
+
+  const updateRef = () => {
+    /* コンソールを見るとブラウザの表示と、ref.currentの中身が異なることを確認できます */
+    ref.current = createTimeStamp();
+    console.log("ref.current -> ", ref.current);
+  };
+  return (
+    <div>
+      <h3>ユースケース3</h3>
+      <p>
+        state: {timeStamp}
+        <button onClick={updateState}>更新</button>
+        {/* ボタンクリック毎に 画面にっ表示しているTime が更新 */}
+      </p>
+      <p>
+        ref: {ref.current}
+        <button onClick={updateRef}>更新</button>
+        {/* ボタンクリック毎に current Timeがコンソールログに表示 */}
+        {/* 但し、画面にっ表示しているTime は更新しない */}
+      </p>
+    </div>
+  );
+};
+```
 
 ## 091_【forwardRef】他のコンポーネントのDOMにアクセスする方法
 [toTop](#)
