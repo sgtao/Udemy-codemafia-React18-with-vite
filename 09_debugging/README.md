@@ -31,6 +31,7 @@
 [toTop](#)
 
 - `debugger`を置くと、ブレークポイントなって実行を一時停止できる
+  * `// debugger`の一行がブレークポイントになる
   * `step over`アイコンで進む（`step over next Function(F10)`で進めていく）
   * 停止したときに`Esc`キーでコンソールが表示される
 
@@ -106,6 +107,23 @@ export default Example;
 - Chrome や firefox の拡張機能の使い方の紹介
   * [Chrome 拡張機能](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=ja)
   * [Firefox 拡張機能](https://addons.mozilla.org/ja/firefox/addon/react-devtools/)
+
+### できること：
+#### Components
+- コンポーネントのツリーが表示表示されるので、確認したいコンポーネントをクリックして内容確認できる（下に窓が表示されるので操作する）
+  * コンポーネントの`props`の内容を表示・編集が行える
+    * 編集内容はソースを変えるわけではないので、リロードすると元に戻る
+  * 右上の`<>`マーク（view source）をクリックすると、ソースコードを見れる
+  * 右上の`👁`マーク（inspect the matching element）をクックするとHTML上の該当エレメントを確認できる
+- 右上の歯車（設定）から、**Hilight updates...**にチェックを入れると更新のあるコンポーネントがハイライトされる
+
+#### Profiler
+- 描画時間を把握することができる
+  * 左上の`●`マーク（録画・停止ボタン）をクリックする
+  * その間に操作したときのレンダリングをコンポーネント毎に確認できる
+
+
+
 
 ## 099_Google検索の仕方
 [toTop](#)
