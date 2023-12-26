@@ -612,6 +612,72 @@ export default Example;
 - [start source](./src/060_practice_ref/start/Example.jsx)
 - useRef、useImperativeHandle、forwardRefを使って完成系の動画再生機能を作成してください。
   * ※useImperativeHandleでplay(再生)、stop(停止)メソッドを定義すること。
+#### スタートソースコード
+```jsx
+import { useState, useRef, forwardRef, useImperativeHandle } from "react";
+
+const Video = forwardRef(({ path }, ref) => {
+
+  useImperativeHandle(ref, () => ({
+    
+  }));
+
+  return (
+    <video style={{ maxWidth: "100%" }}>
+      <source src={path}></source>
+    </video>
+  );
+});
+
+const Example = () => {
+  const [playing, setPlaying] = useState(false);
+
+  const ref = useRef();
+
+  return (
+    <div>
+      <h3>練習問題</h3>
+      <p>useRef、useImperativeHandle、forwardRefを使って完成系の動画再生機能を作成してください。※useImperativeHandleでplay(再生)、stop(停止)メソッドを定義すること。
+</p>
+      <Video ref={ref} path="./sample.mp4" />
+      <button
+        onClick={() => {
+          setPlaying((prev) => !prev);
+        }}
+      >
+        {playing ? "Stop" : "Play"}
+      </button>
+    </div>
+  );
+};
+
+export default Example;
+```
+
+- 難しい...。`useImperativeHadle`を実装
+  * playとstopを、`video`要素の`play()`と`pause()`に渡す
+```jsx
+const Video = forwardRef(({ path }, ref) => {
+  const videoRef = useRef();
+
+  useImperativeHandle(ref, () => ({
+    play() {
+      videoRef.current.play();
+    },
+    stop() {
+      videoRef.current.pause();
+    },
+  }));
+
+  return (
+    <video style={{ maxWidth: "100%" }} ref={videoRef}>
+      <source src={path}></source>
+    </video>
+  );
+});
+
+```
+
 
 ### 解答：ソースコード
 - [end source](./src/060_practice_ref/end/Example.jsx)
@@ -667,4 +733,17 @@ export default Example;
 
 ## 094_セクションまとめ
 [toTop](#)
+
+- ポータルについて、`createPortal`を使うことで子要素のDOMを操作できる
+  * `createPortal(子, DOM要素)`で指定する
+- `useRef`は、再レンダリングを派生させず値を保持する方法
+```jsx
+const ref useRef(initalValue)
+...
+// 要素のref属性に指定できる
+```
+  * ほかのコンポーネントのDOM操作したい場合は、`forwardRef`を使う
+  * `useRef`の使用上の注意点：
+    * Refはレンダリング使用しない値を保持するための逃げ道で頻繁に使うことはしない
+    * いろいろできてしまうので、`useImperativeHandle`で使用制限もできる
 
