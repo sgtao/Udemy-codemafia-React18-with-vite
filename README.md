@@ -85,13 +85,15 @@ mv src/index.js src/main.jsx
 pnpm i
 pnpm i web-vitals -D
 pnpm run dev
-find src -name "*.js" -print
+# find src -name "*.js" -print
 # for filename in ` find src -name "*.js" -print ` ; do ls $filename; done
 # modFilename=`echo $filename |  sed -e "s/.js/.jsx/" `
 # echo $modFilename
 for filename in ` find src -name "*.js" -print ` ; do ls $filename;  modFilename=`echo $filename |  sed -e "s/.js/.jsx/" `; mv $filename $modFilename ; done
 for filename in ` find src -name "*.js" -print ` ; do ls $filename; done
-# pnpm run dev
+pnpm run dev
+#
+# # for section 04_react_basic
 # cd src/080_expr_in_jsx/
 # for filename in ` find src -name "*.js" -print ` ; do ls $filename;  modFilename=`echo $filename |  sed -e "s/.js/.jsx/" `; mv $filename $modFilename ; done
 # cd ../130_whats_jsx/
