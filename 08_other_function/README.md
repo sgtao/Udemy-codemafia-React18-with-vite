@@ -54,7 +54,6 @@ const ModalPortal = ({ children }) => {
 ```
 
 ### ソースコード
-
 - [end source](./src/010_portals/end/Example.jsx)
 - エントリーコンポーネント：
 ```jsx
