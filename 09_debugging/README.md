@@ -6,7 +6,7 @@
 - [095_セクション紹介](#095_セクション紹介)
 - [096_エラーの解消方法](#096_エラーの解消方法)
 - [097_デバッガーを使ってみよう](#097_デバッガーを使ってみよう)
-- [098_React−Developer−Toolsの使い方](#098_React−Developer−Toolsの使い方)
+- [098_React−Developer−Toolsの使い方](#098_react−developer−toolsの使い方)
 - [099_Google検索の仕方](#099_Google検索の仕方)
 
 
