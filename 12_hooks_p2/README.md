@@ -519,18 +519,217 @@ export default Example;
 ## 133_独自のフックを作成してみよう
 [toTop](#)
 
-- 独自のフック（カスタムフック）は、`useState`などのReact Hookを内部で使用している関数（フック）
-  * 例えば、同じステート名の`useState`を複数コンポーネントで使いまわしたいときに利用
-  * 複数のReact Hook を組み合わせて利用する場合
-- [サンプルコード](./src/070_customHook/end/Example.js)
+- 独自のフック（カスタムフック）は、`useState`などのReact Hookを内部で使用している関数（Hooks）
+  * 実装ルール：関数名は、**use〇〇**とすること
+  * 利用ケース１：例えば、同じステート名の`useState`を複数コンポーネントで使いまわしたいときに利用
+  * 利用ケース２：複数のReact Hook を組み合わせて利用する場合
 
 
+### ソースコード
+- [end source](./src/070_customHook/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import { useState } from "react";
+import useTimer from "./useTimer";
+
+// POINT カスタムフックを利用した実装
+const Example = () => {
+  const [ isDisp, setIsDisp ] = useState(true);
+
+  return (
+    <>
+      {isDisp && <Timer/>}
+      <button onClick={() => setIsDisp(prev => !prev)}>{isDisp ? '非表示' : '表示'}</button>
+    </>
+  )
+}
+
+const Timer = () => {
+  // カスタムフック `useTimer` を使用
+  const { time, isRunning, toggle, reset } = useTimer();
+
+  return (
+    <>
+    <h3>
+      <time>{time}</time>
+      <span>秒経過</span>
+    </h3>
+    <div>
+      <button onClick={toggle}>{isRunning ? '一時停止' : 'スタート'}</button>
+      <button onClick={reset}>リセット</button>
+    </div>
+    </>
+    );
+};
+
+export default Example;
+```
+
+- `useTimer`コンポーネント：
+```jsx
+import { useState, useEffect, useLayoutEffect } from "react";
+
+const useTimer = () => {
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    // console.log('init');
+    let intervalId = null;
+
+    if(isRunning) {
+      // console.log('timer start');
+
+      intervalId = window.setInterval(() => {
+        // console.log('interval running');
+        setTime(prev => prev + 1);
+      }, 1000);
+    }
+
+    return () => {
+      window.clearInterval(intervalId)
+      // console.log('end');
+    }
+  }, [isRunning])
+  
+  useEffect(() => {
+    // console.log('updated');
+    document.title = 'counter:' + time;
+    window.localStorage.setItem('time-key-end', time);
+
+    return () => {
+      // debugger
+      // console.log('updated end');
+    }
+  }, [time]);
+
+  useLayoutEffect(() => {
+    const _time = parseInt(window.localStorage.getItem('time-key-end'));
+    if(!isNaN(_time)) {
+      setTime(_time);
+    }
+  }, [])
+
+  const toggle = () => {
+    setIsRunning(prev => !prev);
+  }
+
+  const reset = () => {
+    setTime(0);
+    setIsRunning(false);
+  }
+
+  return {
+    time,
+    isRunning,
+    toggle,
+    reset
+  }
+};
+
+export default useTimer;
+```
 
 ## 134_【練習&解答】Custom−Hook
 [toTop](#)
 
-- [サンプルコード（問題）](./src/075_practice_customHook/start/Example.js)
-- [サンプルコード（解答）](./src/075_practice_customHook/end/Example.js)
+### 練習問題
+- 記述を変更し、完成コードと同じ状態になるようにしてください。
+  * startフォルダの中にhooks.jsというファイルを作成し
+  * その中でuseCountというカスタムフックを作成してください。
+- [start source](./src/075_practice_customHook/start/Example.jsx)
+```jsx
+const Example = () => {
+  return (
+    <>
+      <h3>練習問題</h3>
+      <p>
+        記述を変更し、完成コードと同じ状態になるようにしてください。
+        startフォルダの中にhooks.jsというファイルを作成しその中でuseCountというカスタムフックを作成してください。
+      </p>
+      <div>Counts: {}</div>
+      <button onClick={() => {}}>Count Up!</button>
+    </>
+  );
+};
+
+export default Example;
+```
+
+### 試行案：
+- エントリーコンポーネント：
+```jsx
+import useCount from './hooks/useCount';
+
+const Example = () => {
+  // const [count, updateCount] = useCount(0);
+  const { count, countUp } = useCount(0);
+
+  return (
+    <>
+      <h3>練習問題</h3>
+      <p>
+        記述を変更し、完成コードと同じ状態になるようにしてください。
+        startフォルダの中にhooks.jsというファイルを作成しその中でuseCountというカスタムフックを作成してください。
+      </p>
+      <div>Counts: {}</div>
+      <button onClick={() => {}}>Count Up!</button>
+    </>
+  );
+};
+
+export default Example;
+```
+
+- `useCount`コンポーネント：
+```jsx
+import { useState } from 'react';
+
+const useCount = (initCount) => {
+  count [count, setCount] = useState(initCount);
+
+  const countUp = () => {
+    setCount(count => count++);
+  }
+  return (count, countUp);
+}
+
+export default useCount;
+```
+
+### ソースコード
+- [end source](./src/075_practice_customHook/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import { useCount } from './hooks';
+
+// POINT カスタムフックの練習
+const Example = () => {
+  const { count, countUp } = useCount();
+  return (
+    <>
+      <div>Counts: {count}</div>
+      <button onClick={countUp}>Count Up!</button>
+    </>
+  );
+};
+
+export default Example;
+```
+
+- `useCount`コンポーネント：
+```jsx
+import { useState } from 'react';
+
+export const useCount = () => {
+  const [count, setCount] = useState(0);
+  const countUp = () => {
+    setCount(count + 1);
+  };
+  return { count, countUp };
+};
+```
+
 
 ## 135_【発展】関数型プログラミングから見たuseEffectの使用ケース
 [toTop](#)
@@ -539,11 +738,12 @@ export default Example;
   * これから、`useEffect`内では何を定義したほうが良いか？を理解する
   * Reactにおける副作用は、JSXの構築に関係ないものはすべて副作用として扱われる
     * `console.log`、DOM操作、サーバーとの通信、タイマー処理、ランダム値生成など
-    * これらはすべて **（副作用のある処理すべて）を`useEffect`　もしくは　イベントハンドラで定義する**
+    * これらはすべて **（副作用のある処理すべて）を`useEffect`　で定義する**
+      もしくは**イベントハンドラで定義する**
 
-<br>
-
-- [サンプルコード](./src/080_useEffect_fn_prog/end/Example.js)
+### ソースコード
+- [end source](./src/080_useEffect_fn_prog/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useState, useEffect, useLayoutEffect } from "react";
 
