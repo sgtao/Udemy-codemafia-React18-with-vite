@@ -13,11 +13,11 @@
 - [117_useContext で state を管理してみよう](#117_useContextでstateを管理してみよう)
 - [118_useContext のリファクタリングをしてみよう](#118_usecontext-のリファクタリングをしてみよう)
 - [119_useContext を使う際の注意点！](#119_useContextを使う際の注意点！)
-- [120_useContext と useReducer を組み合わせて使ってみよう](#120_useContextとuseReducerを組み合わせて使ってみよう)
-- [121\_【練習＆解答】useContext と useReducer](#121_練習＆解答usecontext-と-usereducer)
-- [122\_【練習】useContext と useReducer](#122_練習usecontext-と-usereducer)
-- [123\_【解答】useContext と useReducer](#123_解答usecontext-と-usereducer)
-- [124\_【解答続き】useContext と useReducer](#124_解答続きusecontext-と-usereducer)
+- [120_useContext と useReducer を組み合わせて使ってみよう](#120_usecontext-と-usereducer-を組み合わせて使ってみよう)
+- [121_【練習＆解答】useContext と useReducer](#121_練習＆解答usecontext-と-usereducer)
+- [122_【練習】useContext と useReducer](#122_練習usecontext-と-usereducer)
+- [123_【解答】useContext と useReducer](#123_解答usecontext-と-usereducer)
+- [124_【解答続き】useContext と useReducer](#124_解答続きusecontext-と-usereducer)
 
 ## 111\_セクション紹介
 
@@ -828,11 +828,12 @@ export default Main;
 
 - Contextとレンダリングの関係：
   * `Context.Provider`で複数コンポーネントのステートをつないだ場合、
-  * あるコンポーネントで`state`更新すると、複数コンポーネントのレンダリングが行われる
-  * 多用するのは避ける。例を示す
+  * あるコンポーネントで`state`更新すると、複数コンポーネントの再レンダリングが行われる
+  * 多用するとパフォーマンスに影響出る可能性がある
+  * 再レンダリングされるコンポーネントを抑えるため、Contextと更新を分割することができる
+    * 以下のソースコードで`Footer`コンポーネントのimportをやめることで再レンダリングから回避できる
 
 ### ソースコード
-- `vite`を使っているためか、２コンポーネントから`useContext`で参照するとエラーしてしまう
 - [end source](./src/060_context_file_render/end/Example.jsx)
 - エントリーコンポーネント：
 ```jsx
@@ -999,20 +1000,118 @@ export default Footer;
 ## 120_useContext と useReducer を組み合わせて使ってみよう
 [toTop](#)
 
+### ソースコード
+- [end source](./src/065_useContext_with_reducer/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Counter from "./components/Counter";
+import { CounterProvider } from "./context/CounterContext";
+// POINT useContext x useReducer
+const Example = () => {
+  return (
+    <CounterProvider>
+      <Counter />
+    </CounterProvider>
+  );
+};
 
-- [サンプルコード](./src/065_useContext_with_reducer/end/Example.js)
+export default Example;
+```
 
-## 121\_【練習＆解答】useContext と useReducer
+- `CounterProvider`コンポーネント：
+```jsx
+import { createContext, useContext, useReducer } from "react";
 
+const CounterContext = createContext();
+const CounterDispatchContext = createContext();
+
+const CounterProvider = ({ children }) => {
+    const [state, dispatch] = useReducer((prev, { type, step }) => {
+        switch (type) {
+          case "+":
+            return prev + step;
+          case "-":
+            return prev - step;
+          default:
+            throw new Error('不明なactionです。')
+        }
+      }, 0);
+    return (
+        <CounterContext.Provider value={state}>
+            <CounterDispatchContext.Provider value={dispatch}>
+                {children}
+            </CounterDispatchContext.Provider>
+        </CounterContext.Provider>
+    )
+}
+
+const useCounter = () => {
+    return useContext(CounterContext);
+}
+
+const useCounterDispatch = () => {
+    return useContext(CounterDispatchContext);
+}
+
+export { CounterProvider, useCounter, useCounterDispatch }
+```
+
+- `Counter`コンポーネント：
+```jsx
+import CounterResult from "./CounterResult"
+import CounterButton from "./CounterButton"
+
+const Counter = () => {
+    return (
+        <>
+            <CounterResult />
+            <CounterButton step={2} calcType="+"/>
+            <CounterButton step={2} calcType="-"/>
+            <CounterButton step={10} calcType="+"/>
+            <CounterButton step={10} calcType="-"/>
+        </>
+    )
+}
+export default Counter;
+```
+
+- `CounterResult`コンポーネント：
+```jsx
+import { useCounter } from "../context/CounterContext";
+
+const CounterResult = () => {
+  const state = useCounter();
+  return <h3>{state}</h3>;
+};
+
+export default CounterResult;
+```
+
+- `CounterResult`コンポーネント：
+```jsx
+import { useCounterDispatch } from "../context/CounterContext";
+
+const CounterButton = ({calcType, step}) => {
+    
+    const dispatch = useCounterDispatch();
+    
+    const clickHandler = () => {
+        dispatch({ type: calcType, step });
+    }
+
+    return <button onClick={clickHandler}>{calcType}{step}</button>
+}
+export default CounterButton;
+```
+
+
+## 121_【練習＆解答】useContext と useReducer
 [toTop](#)
 
-- [サンプルコード（問題）](./src/070_practice_useContext/start/Example.js)
-- [サンプルコード（解答）](./src/070_practice_useContext/end/Example.js)
-
-### 問題（初期状態）
-
-- コンポネントを階層にするため、`useContext`を利用する
-
+### 練習問題
+- Example内のコードをコンポーネントに分割してください。
+  * また、ステートはContext経由でやり取りしてください。
+- [start source](./src/070_practice_useContext/start/Example.jsx)
 ```jsx
 import { useReducer } from "react";
 
@@ -1025,10 +1124,7 @@ const reducer = (state, { type, payload }) => {
       return { ...state, [name]: value };
     }
     case "add": {
-      // 一部、問題コードに不具合があるが、練習のスコープ外
-      // JavaScriptでは`+`は文字列結合が加算より優先されるため、整数へキャストする
-      // return { ...state, result: state.a + state.b };
-      return { ...state, result: parseInt(state.a) + parseInt(state.b) };
+      return { ...state, result: state.a + state.b };
     }
     case "minus": {
       return { ...state, result: state.a - state.b };
@@ -1054,27 +1150,22 @@ const Example = () => {
   const [state, dispatch] = useReducer(reducer, initState);
 
   const calculate = (e) => {
-    dispatch({ type: e.target.value });
+    dispatch({type: e.target.value});
   };
   const numChangeHandler = (e) => {
-    dispatch({
-      type: "change",
-      payload: { name: e.target.name, value: e.target.value },
-    });
+    dispatch({type: 'change', payload: {name: e.target.name, value: e.target.value}});
   };
   return (
     /* 完成系のJSX */
     // <CalcProvider>
-    //   <Input name="a"/>
-    //   <Input name="b" />
+    //   <Input name="a"/>      
+    //   <Input name="b" />      
     //   <Select />
-    //   <Result />
+    //   <Result />      
     // </CalcProvider>
     <>
       <h3>練習問題</h3>
-      <p>
-        Example内のコードをコンポーネントに分割してください。また、ステートはContext経由でやり取りしてください。
-      </p>
+      <p>Example内のコードをコンポーネントに分割してください。また、ステートはContext経由でやり取りしてください。</p>
       <div>
         a:
         <input
@@ -1108,9 +1199,154 @@ const Example = () => {
 export default Example;
 ```
 
-## 122\_【練習】useContext と useReducer
 
+### ソースコード
+- [end source](./src/070_practice_useContext/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT Contextの練習問題
+import Input from "./components/Input"
+import Select from "./components/Select"
+import Result from "./components/Result"
+import { CalcProvider } from "./context/CalcContext";
+
+const Example = () => {
+  
+  return (
+    <CalcProvider>
+      <Input name="a"/>      
+      <Input name="b" />      
+      <Select />
+      <Result />      
+    </CalcProvider>
+  );
+};
+
+export default Example;
+```
+
+- `CalcProvider`コンポーネント：
+```jsx
+import { createContext, useReducer, useContext } from "react";
+
+export const CalcContext = createContext();
+export const CalcDispatchContext = createContext();
+
+const reducer = (state, { type, payload }) => {
+  switch (type) {
+    case "change": {
+      const { name, value } = payload;
+      return { ...state, [name]: value };
+    }
+    case "add": {
+      return { ...state, result: parseInt(state.a) + parseInt(state.b) };
+    }
+    case "minus": {
+      return { ...state, result: state.a - state.b };
+    }
+    case "divide": {
+      return { ...state, result: state.a / state.b };
+    }
+    case "multiply": {
+      return { ...state, result: state.a * state.b };
+    }
+    default:
+      throw new Error("operator is invalid");
+  }
+};
+
+export const CalcProvider = ({ children }) => {
+  const initState = {
+    a: 1,
+    b: 2,
+    result: 3,
+  };
+
+  const [state, dispatch] = useReducer(reducer, initState);
+
+  return (
+    <CalcContext.Provider value={state}>
+      <CalcDispatchContext.Provider value={dispatch}>
+        {children}
+      </CalcDispatchContext.Provider>
+    </CalcContext.Provider>
+  );
+};
+
+export const useCalc = () => useContext(CalcContext);
+export const useDispatchCalc = () => useContext(CalcDispatchContext);
+```
+
+- `Input`コンポーネント：
+```jsx
+import { useDispatchCalc, useCalc } from "../context/CalcContext";
+
+const Input = ({ name }) => {
+  const dispatch = useDispatchCalc();
+  const state = useCalc();
+  const numChangeHandler = (e) => {
+    dispatch({
+      type: "change",
+      payload: { name: e.target.name, value: e.target.value },
+    });
+  };
+  return (
+    <div>
+      {name}:
+      <input
+        type="number"
+        name={name}
+        value={state[name]}
+        onChange={numChangeHandler}
+      />
+    </div>
+  );
+};
+
+export default Input;
+```
+
+- `Select`コンポーネント：
+```jsx
+import { useDispatchCalc, useCalc } from "../context/CalcContext"
+
+const Select = () => {
+  const dispatch = useDispatchCalc();
+  const state = useCalc();
+  const calculate = (e) => {
+    dispatch({ type: e.target.value });
+  };
+  const CALC_OPTIONS = ["add", "minus", "divide", "multiply"];
+  return (
+    <select value={state.type} name="type" onChange={calculate}>
+      {CALC_OPTIONS.map((type) => (
+        <option key={type} value={type}>
+          {type}
+        </option>
+      ))}
+    </select>
+  );
+};
+
+export default Select;
+```
+
+- `Result`コンポーネント：
+```jsx
+import { useCalc } from "../context/CalcContext";
+
+const Result = () => {
+  const state = useCalc();
+  return <h3>結果：{state.result}</h3>;
+};
+
+export default Result;
+```
+
+
+## 122_【練習】useContext と useReducer
 [toTop](#)
+
 
 - [サンプルコード（問題）](./src/080_practice_reminder/start/Example.jsx)
 - [サンプルコード（解答）](./src/080_practice_reminder/end/Example.js)
@@ -1120,54 +1356,145 @@ export default Example;
 - List コンポーネント内の各項目を Item コンポーネントに分離しましょう。
 - タイトルをダブルクリックするとタイトルを変更出来るようにしましょう
 - Reducer と Context を使って Todo をグローバルなステートにしましょう
+- [start source](./src/080_practice_reminder/start/Example.jsx)
+```jsx
+import Todo from "./components/Todo"
 
-## 123\_【解答】useContext と useReducer
+const Example = () => {
+  return (
+    <>
+    <h3>練習問題</h3>
+    <ul>
+      <li>Listコンポーネント内の各項目をItemコンポーネントに分離しましょう。</li>
+      <li>タイトルをダブルクリックするとタイトルを変更出来るようにしましょう</li>
+      <li>ReducerとContextを使ってTodoをグローバルなステートにしましょう</li>
+    </ul>
+      <h2>Reminder</h2>
+      <Todo />
+    </>
+  );
+};
 
+export default Example;
+```
+
+## 123_【解答】useContext と useReducer
 [toTop](#)
 
-### 問題（初期状態）
 
-- `todos.map(...)`内の JSX を`Item`コンポーネントにする
-
+### ソースコード
+- [end source](./src/080_practice_reminder/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
-const List = ({ todos, deleteTodo }) => {
-  const complete = (id) => {
-    deleteTodo(id);
-  };
+// POINT ContextとuseReducerの練習問題
+import Todo from "./components/Todo"
+
+const Example = () => {
   return (
-    <div>
-      {todos.map((todo) => {
-        return (
-          <div key={todo.id}>
-            <button onClick={() => complete(todo.id)}>完了</button>
-            <span>{todo.content}</span>
-          </div>
-        );
-      })}
-    </div>
+    <>
+      <h2>Reminder</h2>
+      <Todo />
+    </>
   );
 };
 
-export default List;
+export default Example;
 ```
 
-### 解答（それぞれの問題ごとのサンプルコード）
-
-- List コンポーネント内の各項目を Item コンポーネントに分離しましょう。
-  - `List.jsx`は下のようにする
-
+- `Todo`コンポーネント：
 ```jsx
+import List from "./List"
+import Form from "./Form"
+import { TodoProvider } from "../context/TodoContext"
+
+const Todo = () => {
+  return (
+    <TodoProvider>
+      <List />
+      <Form />
+    </TodoProvider>
+  )
+};
+export default Todo;
+```
+
+- `TodoPrivider`コンポーネント：
+```jsx
+import { createContext, useContext, useReducer } from "react";
+
+const TodoContext = createContext();
+const TodoDispatchContext = createContext();
+
+// - `todosList`は、`todoReducer`コンポーネント内に定義してもよい
+// * もし、コンポーネント内に定義した場合は、コンポーネント呼び出しごとに変数定義される
+const todosList = [
+  {
+    id: 1,
+    content: "店予約する",
+    editing: false,
+  },
+  {
+    id: 2,
+    content: "卵買う",
+    editing: false,
+  },
+  {
+    id: 3,
+    content: "郵便出す",
+    editing: false,
+  },
+];
+
+const todoReducer = (todos, action) => {
+  switch (action.type) {
+    case "todo/add":
+      return [...todos, action.todo];
+    case "todo/delete":
+      return todos.filter((todo) => {
+        return todo.id !== action.todo.id;
+      });
+    case "todo/update":
+      return todos.map((_todo) => {
+        return _todo.id === action.todo.id
+          ? { ..._todo, ...action.todo }
+          : { ..._todo };
+      });
+    default:
+      return todos;
+  }
+};
+
+const TodoProvider = ({ children }) => {
+  const [todos, dispatch] = useReducer(todoReducer, todosList);
+
+  return (
+    <TodoContext.Provider value={todos}>
+      <TodoDispatchContext.Provider value={dispatch}>
+        {children}
+      </TodoDispatchContext.Provider>
+    </TodoContext.Provider>
+  );
+};
+
+const useTodos = () => useContext(TodoContext);
+const useDispatchTodos = () => useContext(TodoDispatchContext);
+
+export { useTodos, useDispatchTodos, TodoProvider };
+```
+
+- `List`コンポーネント：
+  - List コンポーネント内の各項目を Item コンポーネントに分離しましょう。
+```jsx
+import { useTodos } from "../context/TodoContext";
 import Item from "./Item";
 
-const List = ({ todos, deleteTodo }) => {
-  const complete = (id) => {
-    deleteTodo(id);
-  };
+const List = () => {
+  const todos = useTodos();
   return (
     <div>
-      {todos.map((todo) => {
-        return <Item key={todo.id} todo={todo} complete={complete} />;
-      })}
+      {todos.map((todo) => (
+        <Item todo={todo} key={todo.id} />
+      ))}
     </div>
   );
 };
@@ -1175,32 +1502,47 @@ const List = ({ todos, deleteTodo }) => {
 export default List;
 ```
 
-- タイトルをダブルクリックするとタイトルを変更出来るようにしましょう
-  - `Item.jsx`を下のようにする
-
+- `Item`コンポーネント：
+  - タイトルをダブルクリックするとタイトルを変更出来るようにしましょう
 ```jsx
 import { useState } from "react";
+import { useDispatchTodos } from "../context/TodoContext";
 
-// const Item = ({ todo, complete }) => {
-// - `Todo.jsx`で`update`を定義して、それを`prop drilling`してくる
-const Item = ({ todo, complete, updateTodo }) => {
-  const [ editingContent, setEditingContent] = useState(todo.content);
+const Item = ({ todo }) => {
+  const [editingContent, setEditingContent] = useState(todo.content);
+  const dispatch = useDispatchTodos();
+
   const changeContent = (e) => setEditingContent(e.target.value);
-  const toggleEditMode = (e) => {
+
+  const toggleEditMode = () => {
     const newTodo = { ...todo, editing: !todo.editing };
-    updateTodo(newTodo);
-  }
+    dispatch({ type: 'todo/update', todo: newTodo });
+  };
+
+  const confirmContent = (e) => {
+    e.preventDefault();
+    const newTodo = {
+      ...todo,
+      editing: !todo.editing,
+      content: editingContent,
+    };
+    dispatch({ type: 'todo/update', todo: newTodo });
+  };
+
+  const complete = (todo) => {
+    dispatch({ type: "todo/delete", todo });
+  };
+
   return (
     <div key={todo.id}>
-      <button onClick={() => complete(todo.id)}>完了</button>
-      {
-        todo.editing ? (
-          <input type="text" value="editingContent"
-          onChange={changeContent} />
+      <button onClick={() => complete(todo)}>完了</button>
+      <form onSubmit={confirmContent} style={{ display: "inline" }}>
+        {todo.editing ? (
+          <input type="text" value={editingContent} onChange={changeContent} />
         ) : (
           <span onDoubleClick={toggleEditMode}>{todo.content}</span>
-        )
-      }
+        )}
+      </form>
     </div>
   );
 };
@@ -1208,6 +1550,47 @@ const Item = ({ todo, complete, updateTodo }) => {
 export default Item;
 ```
 
-## 124\_【解答続き】useContext と useReducer
+- `Form`コンポーネント：
+```jsx
+import { useState } from "react";
+import { useDispatchTodos } from "../context/TodoContext";
+const Form = ({ createTodo }) => {
+  const [enteredTodo, setEnteredTodo] = useState("");
+  const dispatch = useDispatchTodos();
 
+  const addTodo = (e) => {
+    e.preventDefault();
+
+    const newTodo = {
+      id: Math.floor(Math.random() * 1e5),
+      content: enteredTodo,
+      editing: false
+    };
+
+    // 2023/10 修正editingがundefinedになるためediting: falseを追加
+    dispatch({ type: 'todo/add', todo: newTodo, editing: false });
+
+    setEnteredTodo("");
+  };
+  return (
+    <div>
+      <form onSubmit={addTodo}>
+        <input
+          type="text"
+          value={enteredTodo}
+          onChange={(e) => setEnteredTodo(e.target.value)}
+        />
+        <button>追加</button>
+      </form>
+    </div>
+  );
+};
+
+export default Form;
+```
+
+## 124_【解答続き】useContext と useReducer
 [toTop](#)
+
+- 「Reducer と Context を使って Todo をグローバルなステートにしましょう」を対応
+  * 答えは、前セクションの通り

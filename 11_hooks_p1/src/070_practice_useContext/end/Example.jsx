@@ -1,7 +1,7 @@
 // POINT Contextの練習問題
 import Input from "./components/Input"
 import Select from "./components/Select"
-import Result from "./components/Result.js"
+import Result from "./components/Result"
 import { CalcProvider } from "./context/CalcContext";
 
 const Example = () => {
