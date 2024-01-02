@@ -11,7 +11,7 @@
 - [115_【練習＆解答】useReducer](#115_練習＆解答usereducer)
 - [116_useContext でグローバルな値を管理しよう](#116_usecontext-でグローバルな値を管理しよう)
 - [117_useContext で state を管理してみよう](#117_useContextでstateを管理してみよう)
-- [118_useContext のリファクタリングをしてみよう](#118_usecontext-のリファクタリングをしてみよう
+- [118_useContext のリファクタリングをしてみよう](#118_usecontext-のリファクタリングをしてみよう)
 - [119_useContext を使う際の注意点！](#119_useContextを使う際の注意点！)
 - [120_useContext と useReducer を組み合わせて使ってみよう](#120_useContextとuseReducerを組み合わせて使ってみよう)
 - [121\_【練習＆解答】useContext と useReducer](#121_練習＆解答usecontext-と-usereducer)
@@ -531,24 +531,35 @@ export default Example;
 ```
 
 
-
 ## 116_useContext でグローバルな値を管理しよう
 
 [toTop](#)
 
-- 複数階層のコンポーネントがあるとき、`useContext`使うとステートのバケツリレーを防ぐことができる
+- 複数階層のコンポーネントがあるとき、`useContext`使うと`props`のバケツリレーを防ぐことができる
   - `createContext`で登録した値を、`useContext`で参照できる
-- [サンプルコード](./src/030_useContext/end/Example.js)
+- 親コンポーネントで`createContext`でステートを作り、`export`しておく
+```jsx
+export const MyContext = createContext("hello");
+```
+- 子や孫コンポーネントで、importして`useContext`で参照する
+  * importするのは、循環参照とならないよう、定義したContextのみをimportする
+```jsx
+import { MyContext } from "../Example";
+const GrandChild = () => {
+  const value = useContext(MyContext);
+  return (
+    ...
+  );
+};
+```
 
-### サンプル
-
-#### `Example.jsx`
-
+### ソースコード
+- [end source](./src/030_useContext/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 // POINT useContextの基礎
 import { createContext } from "react";
 import Child from "./components/Child";
-// `MyContext`の情報を登録
 export const MyContext = createContext("hello");
 
 const Example = () => {
@@ -558,14 +569,86 @@ const Example = () => {
 export default Example;
 ```
 
-#### `GrandChild.jsx`
+- `Child`コンポーネント：
+```jsx
+import GrandChild from "./GrandChild";
+const Child = () => (
+  <div style={{ border: "1px solid black", padding: 10 }}>
+    <h3>子コンポーネント</h3>
+    <GrandChild />
+  </div>
+);
+export default Child;
+```
 
+- `GrandChild`コンポーネント：
 ```jsx
 import { useContext } from "react";
 import { MyContext } from "../Example";
 const GrandChild = () => {
-  // `value`に登録したContextをセット
   const value = useContext(MyContext);
+  return (
+      <div style={{ border: "1px solid black" }}>
+        <h3>孫コンポーネント</h3>
+        {value}
+      </div>
+  );
+};
+export default GrandChild;
+```
+
+
+## 117_useContext で state を管理してみよう
+
+[toTop](#)
+
+- `useContext`は、props のバケツリレー（`props drilling`）を防ぐために使われる
+  - `state`の更新をしたい場合、更新側コンポネントと参照側コンポーネントを含む親コンポーネントで`useState`を定義する
+
+### ソースコード
+- `vite`を使っているためか、２コンポーネントから`useContext`で参照するとエラーしてしまう
+- [end source](./src/040_useContext_with_state/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT useContextとstate
+import { createContext, useState } from "react";
+import Child from "./component/Child";
+import OtherChild from "./component/OtherChild";
+
+export const MyContext = createContext();
+
+const Example = () => {
+  const stateAndSetter = useState(0);
+  // stateAndSetter = [ state, setState ]
+  return (
+    <MyContext.Provider value={stateAndSetter}>
+      <Child />
+      <OtherChild />
+    </MyContext.Provider>
+  );
+};
+
+export default Example;
+```
+
+- `Child`コンポーネント：
+```jsx
+import GrandChild from "./GrandChild";
+const Child = () => (
+  <div style={{ border: "1px solid black", padding: 10 }}>
+    <h3>子コンポーネント</h3>
+    <GrandChild />
+  </div>
+);
+export default Child;
+```
+
+- `GrandChild`コンポーネント：
+```jsx
+import { useContext } from "react";
+import { MyContext } from "../Example";
+const GrandChild = () => {
+  const [value] = useContext(MyContext);
   return (
     <div style={{ border: "1px solid black" }}>
       <h3>孫コンポーネント</h3>
@@ -576,29 +659,346 @@ const GrandChild = () => {
 export default GrandChild;
 ```
 
-## 117_useContext で state を管理してみよう
+- `OtherChild`コンポーネント：
+```jsx
+import { useContext } from "react";
+import { MyContext } from "../Example";
+const OtherChild = () => {
+  const [, setState] = useContext(MyContext);
 
-[toTop](#)
+  const clickHandler = (e) => {
+    setState((prev) => prev + 1);
+  };
 
-- `useContext`は、props のバケツリレー（`props drilling`）を防ぐために使われる
-  - `state`の更新をしたい場合、更新側コンポネントと参照側コンポーネントを含む親コンポーネントで`useState`を定義する
-- [サンプルコード](./src/040_useContext_with_state/end/Example.js)
+  return (
+    <div style={{ border: "1px solid black" }}>
+      <h3>他の子コンポーネント</h3>
+      <button onClick={clickHandler}>+</button>
+    </div>
+  );
+};
+
+export default OtherChild;
+```
+
 
 ## 118_useContext のリファクタリングをしてみよう
-
 [toTop](#)
 
-- [サンプルコード](./src/050_context_file/)
+- `useState`の利用法を復習しながら、`useContext`のリファクタリング例を示す
+
+
+### ソースコード
+- [end source](./src/050_context_file/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT Contextコードの整理方法
+
+import "./Example.css";
+import Main from "./components/Main";
+import Header from "./components/Header";
+import { ThemeProvider } from "./context/ThemeContext";
+
+const Example = () => {
+  return (
+    <ThemeProvider>
+      <Header />
+      <Main />
+    </ThemeProvider>
+  );
+};
+
+export default Example;
+```
+
+- CSS：`Example.css`
+```css
+main,
+header {
+  padding: 1rem;
+}
+.field {
+  margin-bottom: 1rem;
+}
+input[type="radio"] {
+  margin-left: 0.5rem;
+}
+
+header.content-light {
+  color: #000000;
+  background-color: #9dbdff;
+}
+main.content-light {
+  color: #000000;
+  background-color: #ffffff;
+}
+header.content-dark {
+  color: #ffffff;
+  background-color: #535353;
+}
+main.content-dark {
+  color: #ffffff;
+  background-color: #747474;
+}
+header.content-red {
+  color: #ffffff;
+  background-color: #ff7373;
+}
+main.content-red {
+  color: #ffffff;
+  background-color: #ff3636;
+}
+```
+
+- `ThemePrivider`コンポーネント：
+```jsx
+import { useState, useContext, createContext } from "react";
+
+export const ThemeContext = createContext();
+
+export const ThemeProvider = ({ children }) => {
+
+  const [theme, setTheme] = useState("light");
+  
+  return (
+    <ThemeContext.Provider value={[theme, setTheme]}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export const useTheme = () => useContext(ThemeContext);
+```
+
+- `Header`コンポーネント：
+```jsx
+import { useTheme } from "../context/ThemeContext"
+
+
+const Header = () => {
+  const [theme, setTheme] = useTheme();
+
+  const THEMES = ["light", "dark", "red"];
+
+  const changeTheme = (e) => setTheme(e.target.value);
+
+  return (
+    <header className={`content-${theme}`}>
+      {THEMES.map((_theme) => {
+        return (
+          <label key={_theme}>
+            <input
+              type="radio"
+              value={_theme}
+              checked={theme === _theme}
+              onChange={changeTheme}
+            />
+            {_theme}
+          </label>
+        );
+      })}
+    </header>
+  );
+};
+
+export default Header;
+```
+
+- `Main`コンポーネント：
+```jsx
+import { useTheme } from "../context/ThemeContext"
+
+const Main = () => {
+  const [theme] = useTheme();
+
+  return (
+    <main className={`content-${theme}`}>
+      <h1>テーマの切り替え</h1>
+    </main>
+  );
+};
+
+export default Main;
+```
+
+
 
 ## 119_useContext を使う際の注意点！
-
 [toTop](#)
 
-- [サンプルコード](./src/060_context_file_render/end/Example.js)
+- Contextとレンダリングの関係：
+  * `Context.Provider`で複数コンポーネントのステートをつないだ場合、
+  * あるコンポーネントで`state`更新すると、複数コンポーネントのレンダリングが行われる
+  * 多用するのは避ける。例を示す
+
+### ソースコード
+- `vite`を使っているためか、２コンポーネントから`useContext`で参照するとエラーしてしまう
+- [end source](./src/060_context_file_render/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT 発展 Contextとレンダリングの関係
+import "./Example.css";
+import Main from "./components/Main";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import { ThemeProvider } from "./context/ThemeContext";
+
+const Example = () => {
+
+  // console.log('example')
+  
+  return (
+    <ThemeProvider>
+      <Header />
+      <Main />
+      <Footer />
+    </ThemeProvider>
+  );
+};
+
+export default Example;
+```
+
+- CSS：`Example.css`
+```css
+main,
+header {
+  padding: 1rem;
+}
+.field {
+  margin-bottom: 1rem;
+}
+input[type="radio"] {
+  margin-left: 0.5rem;
+}
+
+header.content-light {
+  color: #000000;
+  background-color: #9dbdff;
+}
+main.content-light {
+  color: #000000;
+  background-color: #ffffff;
+}
+header.content-dark {
+  color: #ffffff;
+  background-color: #535353;
+}
+main.content-dark {
+  color: #ffffff;
+  background-color: #747474;
+}
+header.content-red {
+  color: #ffffff;
+  background-color: #ff7373;
+}
+main.content-red {
+  color: #ffffff;
+  background-color: #ff3636;
+}
+```
+
+- `ThemePrivider`コンポーネント：
+```jsx
+import { useState, useContext, createContext } from "react";
+
+export const ThemeContext = createContext();
+export const ThemeUpdateContext = createContext();
+
+export const ThemeProvider = ({ children }) => {
+  const [theme, setTheme] = useState("light");
+
+  return (
+    <ThemeContext.Provider value={theme}>
+      <ThemeUpdateContext.Provider value={setTheme}>
+        {children}
+      </ThemeUpdateContext.Provider>
+    </ThemeContext.Provider>
+  );
+};
+
+export const useTheme = () => useContext(ThemeContext);
+
+export const useUpdateTheme = () => useContext(ThemeUpdateContext);
+```
+
+- `Header`コンポーネント：
+```jsx
+import { useTheme, useUpdateTheme } from "../context/ThemeContext"
+
+
+const Header = () => {
+  const theme = useTheme();
+  const setTheme = useUpdateTheme();
+
+  const THEMES = ["light", "dark", "red"];
+
+  const changeTheme = (e) => setTheme(e.target.value);
+
+  // console.log('header')
+
+  return (
+    <header className={`content-${theme}`}>
+      {THEMES.map((_theme) => {
+        return (
+          <label key={_theme}>
+            <input
+              type="radio"
+              value={_theme}
+              checked={theme === _theme}
+              onChange={changeTheme}
+            />
+            {_theme}
+          </label>
+        );
+      })}
+    </header>
+  );
+};
+
+export default Header;
+```
+
+- `Main`コンポーネント：
+```jsx
+import { useTheme } from "../context/ThemeContext"
+
+const Main = () => {
+  const theme = useTheme();
+
+  // console.log('main')
+
+  return (
+    <main className={`content-${theme}`}>
+      <h1>テーマの切り替え</h1>
+    </main>
+  );
+};
+
+export default Main;
+```
+
+- `Footer`コンポーネント：
+```jsx
+// import { useUpdateTheme } from "../context/ThemeContext"
+
+const Footer = () => {
+  // const setTheme = useUpdateTheme();
+  // console.log('footer')
+
+  return (
+    <footer>
+      <div>フッター</div>
+    </footer>
+  );
+};
+
+export default Footer;
+```
 
 ## 120_useContext と useReducer を組み合わせて使ってみよう
-
 [toTop](#)
+
 
 - [サンプルコード](./src/065_useContext_with_reducer/end/Example.js)
 
