@@ -7,7 +7,8 @@ const reducer = (state, { type, payload }) => {
   switch (type) {
     case "change": {
       const { name, value } = payload;
-      return { ...state, [name]: value };
+      // return { ...state, [name]: value };
+      return { ...state, [name]: Number(value) };
     }
     case "add": {
       return { ...state, result: state.a + state.b };

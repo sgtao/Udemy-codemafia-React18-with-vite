@@ -5,10 +5,10 @@
 ## 講座一覧
 
 - [111\_セクション紹介](#111_セクション紹介)
-- [112_useReducer を使ってみよう](#112_useReducerを使ってみよう)
-- [113_useReducer と useState の違い](#113_useReducerとuseStateの違い)
+- [112_useReducer を使ってみよう](#112_usereducer-を使ってみよう)
+- [113_useReducer と useState の違い](#113_usereducer-と-usestate-の違い)
 - [114_useReducer と useState の違い（関数型プログラミング視点）](#114_usereducer-と-usestate-の違い関数型プログラミング視点)
-- [115\_【練習＆解答】useReducer](#115_練習＆解答usereducer)
+- [115_【練習＆解答】useReducer](#115_練習＆解答usereducer)
 - [116_useContext でグローバルな値を管理しよう](#116_usecontext-でグローバルな値を管理しよう)
 - [117_useContext で state を管理してみよう](#117_useContextでstateを管理してみよう)
 - [118_useContext のリファクタリングをしてみよう](#118_usecontext-のリファクタリングをしてみよう
@@ -23,17 +23,19 @@
 
 [toTop](#)
 
-- `useRecuder`と`useContext`を紹介
+- `useReducer`と`useContext`というReact Hooksの使い方を紹介
+  * `useReducer`とは、`useState`の書き換えのような使い方をする
+  * `useContext`は、コンポネント間でステートを共有する機能を持つ
 
 ## 112_useReducer を使ってみよう
-
 [toTop](#)
 
-- `useRecuder`は、`useState`の代わりとして使う Hook
-  - 両 Hooks の違いを解説
-- [サンプルコード](./src/010_useState_to_useReducer/end/Example.js)
+- `useRecuder`は、`useState`の代わりとして使うReact Hooks
+- 本セクションでは、`useState`から`useReducer`への書き換え例　と　メリットを紹介
 
-### `useState`の場合
+### 両 Hooks の違い
+
+#### `useState`の場合
 
 ```jsx
 import { useState } from "react";
@@ -54,7 +56,7 @@ const Example = () => {
 };
 ```
 
-### `useReducer`の場合
+#### `useReducer`の場合
 
 - `useReducer`では、初期値と処理を一度に定義できる
 
@@ -81,14 +83,29 @@ const Example = () => {
 };
 ```
 
-- 一般的には分岐は`switch`文を使う。
-- `action`はオブジェクトで書く
-- ⇒ 　[サンプルコード](./src/010_useState_to_useReducer/end/Example.js)参照
-
 #### `useReducer`の発展形
 
-- coutUp と countDown を実装してみる
+- `useReducer`では、複雑な処理を一度に定義できる
+  - coutUp と countDown を実装してみる
+  - 処理内容を引数（`action`）で指定する
+    - 一般的には分岐は`switch`文を使う。
+    - `action`はオブジェクトで書く。条件指示のプロパティは`type`と定義する
+  ```jsx
+  // const [state, dispatch] = useReducer(reducer, initialArg, init)
+  const [rstate, dispatch] = useReducer((prev, { type, step }) => {
+    switch (type) {
+      case "+":
+        return prev + step; 
+      case "-":
+        return prev - step;
+      default:
+        throw new Error('不明なactionです。')
+    }
+  }, 0);
+  ```
+  - `useReducer`は`Redux`の影響を受けているため、似た引数定義となっている
 
+- 下はcountUpとcountDownを定義した例：
 ```jsx
 import { useReducer } from "react";
 /* POINT useReducerの使い方
@@ -123,6 +140,62 @@ const Example = () => {
 };
 ```
 
+
+### ソースコード
+- [end source](./src/010_useState_to_useReducer/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import { useReducer, useState } from "react";
+/* POINT useReducerの使い方
+const [state, dispatch] = useReducer(reducer, initialArg, init)
+reducer(state, action)
+*/
+// POINT useReducerはuseStateの書き換えに使用
+const Example = () => {
+  const [state, setState] = useState(0);
+  const [rstate, dispatch] = useReducer((prev, { type, step }) => {
+    switch (type) {
+      case "+":
+        return prev + step; 
+      case "-":
+        return prev - step;
+      default:
+        throw new Error('不明なactionです。')
+    }
+    // if (action === "+") {
+    //   return ++prev;
+    // } else if (action === "-") {
+    //   return --prev;
+    // }
+  }, 0);
+
+  const countUp = () => {
+    setState((prev) => ++prev);
+  };
+  const rcountUp = () => {
+    dispatch({ type: "+", step: 2 });
+  };
+  const rcountDown = () => {
+    dispatch({ type: "-", step: 3 });
+  };
+  return (
+    <>
+      <div>
+        <h3>{state}</h3>
+        <button onClick={countUp}>+</button>
+      </div>
+      <div>
+        <h3>{rstate}</h3>
+        <button onClick={rcountUp}>+</button>
+        <button onClick={rcountDown}>-</button>
+      </div>
+    </>
+  );
+};
+
+export default Example;
+```
+
 ## 113_useReducer と useState の違い
 
 [toTop](#)
@@ -130,33 +203,111 @@ const Example = () => {
 - プログラム観点での`useReducer`のメリット
   - `useState` ：状態の更新の仕方は利用側に託す
     - （状態定義と状態の更新定義を別々に行う）
-  - `useReduer`：状態の定義と更新の仕方も状態側で担当する」
-- [サンプルコード](./src/020_useReducer_pros/end/Example.js)
+  - `useReduer`：状態の定義と更新の仕方も状態側で担当する
+- 状態と処理の分離とは：
+  * `useState`では、値の更新のみ行うので、処理を加えるのはユーザが実装する
+    * `useState`で定義した場合：手続き型（ケースごとの）定義が必要となる
+    ```jsx
+    const countUp = () => {
+      setState((prev) => ++prev);
+    };
+    const countDown = () => {
+      setState((prev) => --prev);
+    };
+    ```
+    * `useReducer`を使うと、統一の関数で引数で切り替えができる
+    * 複数人の開発をしていると、`dispatch`を定義すれば処理の変更を回避できる
+    ```jsx
+    // countUpとcountDownのどちらも、dispatch（というreducer）を呼び出す
+    const rcountUp = () => {
+      dispatch({ type: "+", step: 2 });
+    };
+    const rcountDown = () => {
+      dispatch({ type: "-", step: 3 });
+    };
+    ```
+
+### ソースコード
+- [end source](./src/020_useReducer_pros/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import { useReducer, useState } from "react";
+
+// POINT useReducerとuseStateの違い
+const Example = () => {
+  const [state, setState] = useState(0);
+  const [rstate, dispatch] = useReducer((prev, { type, step }) => {
+    switch (type) {
+      case "+":
+        return prev + step;
+      case "-":
+        return prev - step;
+      default:
+        throw new Error('不明なactionです。')
+    }
+    // if (action === "+") {
+    //   return ++prev;
+    // } else if (action === "-") {
+    //   return --prev;
+    // }
+  }, 0);
+
+  const countUp = () => {
+    setState((prev) => ++prev);
+  };
+  const countDown = () => {
+    setState((prev) => --prev);
+  };
+  const rcountUp = () => {
+    dispatch({ type: "+", step: 2 });
+  };
+  const rcountDown = () => {
+    dispatch({ type: "-", step: 3 });
+  };
+  return (
+    <>
+      <div>
+        <h3>{state}</h3>
+        <button onClick={countUp}>+</button>
+        <button onClick={countDown}>-</button>
+      </div>
+      <div>
+        <h3>{rstate}</h3>
+        <button onClick={rcountUp}>+</button>
+        <button onClick={rcountDown}>-</button>
+      </div>
+    </>
+  );
+};
+
+export default Example;
+```
+
 
 ## 114_useReducer と useState の違い（関数型プログラミング視点）
 
 [toTop](#)
 
 - 状態と処理の分離：
-
   - `useState` ：コンポーネントで更新用の処理を担当
   - `useReduer`：state と一緒に更新用の処理を保持
     - ただし、実装は更新処理を分離（関数定義にできる）
-
-- 純粋性（純粋関数）
-
-  - 特定の引数に特定の戻り値
-
-  * 純粋関数の場合は単体テストがしやすい
+### 純粋性（純粋関数）：
+- 純粋性とは「特定の引数に特定の戻り値を返すこと」
+  * `useState`で定義した場合：手続き型（ケースごとの）定義が必要となる
+  * `useReducer`を使うと、統一の関数で引数で切り替えができる
+  * 純粋関数の場合は単体テストができる
   * プログラムが複雑になるほど、`useState`より`useReducer`や`Redux`のメリットが活きる
 
-- [サンプルコード](./src/020_useReducer_pros/end/Example.js)
 
-### 純粋性を利用した`useReducer`の定義と処理の分離
+### 不変性
+- 不変性：不変性とは、関数引数を変更しないこと
+  * もし、`useReducer`内でステート更新したいときは、新たなステートを定義する
 
-- 下のようにも実装できる
-
+### 純粋関数で定義するサンプル
+- `useReducer`は純粋関数で定義できるので、下のように、第一引数のCallbackを別にも実装できる
 ```jsx
+// reducerは、引数によって処理が決定するので、純粋関数
 const reducer = (prev, { type, step }) => {
     switch (type) {
       case "+":
@@ -166,6 +317,9 @@ const reducer = (prev, { type, step }) => {
       default:
         throw new Error('不明なactionです。')
     }
+
+    // もし、reducer内で新たなステートを作りたいときは定義する
+    // const newState = { ...prev }
 }
 // POINT useReducerとuseStateの違い
 const Example = () => {
@@ -174,23 +328,23 @@ const Example = () => {
 }
 ```
 
-## 115\_【練習＆解答】useReducer
+
+## 115_【練習＆解答】useReducer
 
 [toTop](#)
 
-- [サンプルコード（問題）](./src/025_practice_useReducer/start/Example.js)
-- [サンプルコード（解答）](./src/025_practice_useReducer/end/Example.js)
 
-### 問題（初期状態）
-
-- JSX のコメントアウトを外して解答の機能を実装する
-
+### 練習問題
+- useReducerを使って完成コードと同じ機能を作成してください。
+  * 数値（`a`と`b`）を入力して、演算子を選ぶと、結果を表示するアプリ
+- [start source](./src/025_practice_useReducer/start/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 import { useReducer } from "react";
 
 const CALC_OPTIONS = ["add", "minus", "divide", "multiply"];
 
-const reducer = () => {};
+const reducer = () => {}
 
 const Example = () => {
   const initState = {
@@ -201,14 +355,18 @@ const Example = () => {
 
   const [state, dispatch] = useReducer(reducer, initState);
 
-  const calculate = (e) => {};
+  const calculate = (e) => {
+    
+  };
 
-  const numChangeHandler = (e) => {};
+  const numChangeHandler = (e) => {
+    
+  }
 
   return (
     <>
-      <h3>練習問題</h3>
-      <p>useReducerを使って完成コードと同じ機能を作成してください。</p>
+    <h3>練習問題</h3>
+    <p>useReducerを使って完成コードと同じ機能を作成してください。</p>
       {/* <div>
         a:
         <input
@@ -236,6 +394,143 @@ const Example = () => {
 
 export default Example;
 ```
+
+### 試案
+- JSX以外のコンポーネントの定義
+```jsx
+import { useReducer } from "react";
+
+const CALC_OPTIONS = ["add", "minus", "divide", "multiply"];
+
+const reducer = (state, { type, payload }) => {
+  switch (type) {
+    case "change": {
+      const { name, value } = payload;
+      // return { ...state, [name]: value };
+      return { ...state, [name]: Number(value) };
+    }
+    case "add": {
+      const newResult = state.a + state.b;
+      return { ...state, result: newResult };
+    }
+    ...
+    default : {
+      throw new Error("operator is invalid");
+    }
+  }
+};
+
+const Example = () => {
+  const initState = {
+    a: 1,
+    b: 2,
+    result: 3,
+  };
+
+  const [state, dispatch] = useReducer(reducer, initState);
+
+  const calculate = (e) => {
+    // dispatch(state, { e.type , {}}); // wrong;
+    dispatch({type: e.target.value});
+  };
+
+  const numChangeHandler = (e) => {
+    // dispatch(state, { "change", { e.key, e.valule }}); // wrong
+    dispatch({
+      type: "change",
+      payload: {name: e.target.name, value: e.target.value}
+    });
+  };
+
+  return (...);
+}
+
+export default Example;
+```
+
+### ソースコード
+- [end source](./src/025_practice_useReducer/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT useReducerの練習問題
+import { useReducer } from "react";
+
+const CALC_OPTIONS = ["add", "minus", "divide", "multiply"];
+
+const reducer = (state, { type, payload }) => {
+  switch (type) {
+    case "change": {
+      const { name, value } = payload;
+      return { ...state, [name]: value };
+    }
+    case "add": {
+      return { ...state, result: state.a + state.b };
+    }
+    case "minus": {
+      return { ...state, result: state.a - state.b };
+    }
+    case "divide": {
+      return { ...state, result: state.a / state.b };
+    }
+    case "multiply": {
+      return { ...state, result: state.a * state.b };
+    }
+    default:
+      throw new Error("operator is invalid");
+  }
+};
+
+const Example = () => {
+  const initState = {
+    a: 1,
+    b: 2,
+    result: 3,
+  };
+
+  const [state, dispatch] = useReducer(reducer, initState);
+
+  const calculate = (e) => {
+    dispatch({type: e.target.value});
+  };
+  const numChangeHandler = (e) => {
+    dispatch({type: 'change', payload: {name: e.target.name, value: e.target.value}});
+  };
+  return (
+    <>
+      <div>
+        a:
+        <input
+          type="number"
+          name="a"
+          value={state.a}
+          onChange={numChangeHandler}
+        />
+      </div>
+      <div>
+        b:
+        <input
+          type="number"
+          name="b"
+          value={state.b}
+          onChange={numChangeHandler}
+        />
+      </div>
+      <select value={state.type} name="type" onChange={calculate}>
+        {CALC_OPTIONS.map((type) => (
+          <option key={type} value={type}>
+            {type}
+          </option>
+        ))}
+      </select>
+      <h3>結果：{state.result}</h3>
+    </>
+  );
+};
+
+export default Example;
+```
+
+
 
 ## 116_useContext でグローバルな値を管理しよう
 
