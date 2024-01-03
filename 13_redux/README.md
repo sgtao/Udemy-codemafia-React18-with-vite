@@ -4,19 +4,19 @@
 
 ## 講座一覧
 - [136_セクション紹介](#136_セクション紹介)
-- [137_Reduxとグローバルな状態管理](#137_Reduxとグローバルな状態管理)
+- [137_Reduxとグローバルな状態管理](#137_reduxとグローバルな状態管理)
 - [138_★本セクションのサンプルコードの実行方法](#138_★本セクションのサンプルコードの実行方法)
-- [139_Reduxを使ってみよう](#139_Reduxを使ってみよう)
-- [140_Reduxの状態管理方法について学ぼう](#140_Reduxの状態管理方法について学ぼう)
-- [141_複数のReducerを使う方法](#141_複数のReducerを使う方法)
-- [142_Action−CreatorでActionを定義してみよう](#142_Action−CreatorでActionを定義してみよう)
-- [143_Redux−ToolkitでReduxを書き換えてみよう](#143_Redux−ToolkitでReduxを書き換えてみよう)
-- [144_Redux−Toolkitにおけるミュータブルな値の変更](#144_Redux−Toolkitにおけるミュータブルな値の変更)
-- [145_Immerを使ったミュータブルな値の変更](#145_Immerを使ったミュータブルな値の変更)
-- [146_Redux−Thunkとは？Redux−Middlewareとの関係](#146_Redux−Thunkとは？Redux−Middlewareとの関係)
-- [147_Redux−Thunkで非同期処理を記述してみよう](#147_Redux−Thunkで非同期処理を記述してみよう)
+- [139_Reduxを使ってみよう](#139_reduxを使ってみよう)
+- [140_Reduxの状態管理方法について学ぼう](#140_reduxの状態管理方法について学ぼう)
+- [141_複数のReducerを使う方法](#141_複数のreducerを使う方法)
+- [142_Action−CreatorでActionを定義してみよう](#142_action−creatorでactionを定義してみよう)
+- [143_Redux−ToolkitでReduxを書き換えてみよう](#143_redux−toolkitでreduxを書き換えてみよう)
+- [144_Redux−Toolkitにおけるミュータブルな値の変更](#144_redux−toolkitにおけるミュータブルな値の変更)
+- [145_Immerを使ったミュータブルな値の変更](#145_immerを使ったミュータブルな値の変更)
+- [146_Redux−Thunkとは？Redux−Middlewareとの関係](#146_redux−thunkとはredux−middlewareとの関係)
+- [147_Redux−Thunkで非同期処理を記述してみよう](#147_redux−thunkで非同期処理を記述してみよう)
 - [148_非同期処理のステータスを画面に表示してみよう](#148_非同期処理のステータスを画面に表示してみよう)
-- [149_Redux−Middlewareを作成してみよう](#149_Redux−Middlewareを作成してみよう)
+- [149_Redux−Middlewareを作成してみよう](#149_redux−middlewareを作成してみよう)
 - [150_セクションまとめ](#150_セクションまとめ)
 
 
@@ -248,17 +248,35 @@ export default CounterButton;
 [toTop](#)
 
 - ステートの内容はオブジェクトを定義して、オブジェクトプロパティ毎に`reducer`を定義できる
+  * ステート定義の最後に、`combineReducers`で統合する
 
-### ステート定義
-- `store/index.js`の定義
-```js
+### ソースコード
+- [end source](./end/src/015_multiple_reducers/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT Reduxで複数のReducerを使う方法
+import Counter from "./components/Counter";
+import { Provider } from "react-redux";
+import store from "./store"
+
+const Example = () => {
+  return (
+    <Provider store={store}>
+      <Counter />
+    </Provider>
+  );
+};
+
+export default Example;
+```
+
+- `store`モジュール：
+```jsx
 import { createStore, combineReducers } from "redux";
 
 const initialState = 0;
-
 const reducer = (state = initialState, { type, step }) => {
   console.log(type);
-  // typeをみて、更新するかを判定
   switch (type) {
     case "counter/+":
       return state + step;
@@ -268,10 +286,12 @@ const reducer = (state = initialState, { type, step }) => {
       return state;
   }
 };
+
+// ２つ目の`Reducer`
 const reducer2 = (state = initialState, { type, step }) => {
   console.log(type);
   switch (type) {
-    case "counter2/+":
+    case "counter2/+":  // 更新するときは、`type: "counter2/+"` としてdispatchする
       return state + step;
     case "counter2/-":
       return state - step;
@@ -280,18 +300,51 @@ const reducer2 = (state = initialState, { type, step }) => {
   }
 };
 
+// ２つの`Reducer`を統合する
 const reducers = combineReducers({
-  counter: reducer,
-  counter2: reducer2,
+  counter: reducer,   // 外部から暗唱するときは、`state.counter`で参照
+  counter2: reducer2,   // 外部から暗唱するときは、`state.counter2`で参照
 });
 
 export default createStore(reducers);
 ```
 
-- ⇒　`state.counter`と`state.counter2`は独立して操作できる
-  * 全体ソースは[015_multiple_reducers](./end/src/015_multiple_reducers/)
-    + CounterButton.jsのdispatch()で、`type: 'counter2/'`として、`state.counter2`のみを更新させている
-```js
+- `Counter`コンポーネント：
+```jsx
+import CounterResult from "./CounterResult"
+import CounterButton from "./CounterButton"
+
+const Counter = () => {
+    return (
+        <>
+            <CounterResult />
+            <CounterButton step={2} calcType="+"/>
+            <CounterButton step={2} calcType="-"/>
+            <CounterButton step={10} calcType="+"/>
+            <CounterButton step={10} calcType="-"/>
+        </>
+    )
+}
+export default Counter;
+```
+
+- `CounterResult`コンポーネント：
+```jsx
+import { useSelector } from "react-redux"
+const CounterResult = () => {
+  // const state = useCounter();
+  const state = useSelector(state => state); // Reducerを呼び出し
+  console.log(state);
+  return <h3>{state.counter}:{state.counter2}</h3>; // reducer2 から参照
+};
+
+export default CounterResult;
+```
+
+- `CounterButton`コンポーネント：
+  - `state.counter`と`state.counter2`は独立して操作できる
+  + `dispatch(useDispatch)`で、`type: 'counter2/'`として、`state.counter2`のみを更新させている
+```jsx
 import { useDispatch } from "react-redux";
 
 const CounterButton = ({calcType, step}) => {
@@ -300,7 +353,7 @@ const CounterButton = ({calcType, step}) => {
     // const dispatch = useCounterDispatch();
     
     const clickHandler = () => {
-        dispatch({ type: 'counter2/' + calcType, step }); // typeでdispatchをしてい
+        dispatch({ type: 'counter2/' + calcType, step });
     }
 
     return <button onClick={clickHandler}>{calcType}{step}</button>
@@ -311,7 +364,7 @@ export default CounterButton;
 ## 142_Action−CreatorでActionを定義してみよう
 [toTop](#)
 
-* Action-Creatorを使うと、処理を関数で定義することでミスの少ない実装ができる
+* `Action-Creator`を使うと、処理を関数で定義することでミスの少ない実装ができる
 * 全体ソースは[020_actionCreator](./end/src/020_actionCreator/)
 
 ### 事前準備（ストアのモジュール分割）
