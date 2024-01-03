@@ -892,12 +892,178 @@ const CounterButton = ({calcType, step, actionCreator}) => {
 export default CounterButton;
 ```
 
-
-
 ## 148_非同期処理のステータスを画面に表示してみよう
 [toTop](#)
 
-* 全体ソースは[060_createAsyncThunk](./end/src/060_createAsyncThunk/)
+- 非同期処理の応答により画面表示を制御する方法を紹介
+- 非同期処理の内容を画面に反映させる
+  * ポイントは、`reducer`定義で`extraReducers`プロパティを追加定義
+  * `extraReducers`内で、oddケースで非同期処理を実装して状態に応じた画面表示を更新する
+  * むずかし...
+
+### ソースコード
+- [end source](./end/src/060_createAsyncThunk/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT [createAsyncThunk]非同期処理のステータスを画面に表示
+import Counter from "./components/Counter";
+import { Provider } from "react-redux";
+import store from "./store"
+
+const Example = () => {
+  return (
+    <Provider store={store}>
+      <Counter />
+    </Provider>
+  );
+};
+
+export default Example;
+```
+
+- `store`モジュール：
+```jsx
+import { configureStore } from "@reduxjs/toolkit";
+import reducer from "./modules/counter";
+
+export default configureStore({
+  reducer: {
+    counter: reducer
+  }
+});
+```
+
+- `reducer`モジュール：
+```jsx
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+
+import { asyncCount } from "../../api/counter"
+
+const counter = createSlice({
+  name: 'counter',
+  initialState: {
+    count: 0,
+    status: ''
+  },
+  reducers: {
+    add(state, { type, payload }) {
+      state.count = state.count + payload;
+      // const newState = { ...state };
+      // newState.count = state.count + payload
+      // return newState;
+    },
+    minus(state, { type, payload }) {
+      state.count = state.count - payload;
+      // const newState = { ...state };
+      // newState.count = state.count - payload
+      // return newState;
+    }
+  },
+  // 画面表示のために下を追加する：
+  // - 非同期処理の記述のように、oddケース（`.`によるカスケード）で随時表示メッセージを更新
+  // - 画面の
+  extraReducers: (builder) => {
+    builder.addCase(addAsyncWithStatus.pending, (state) => {
+      state.status = 'Loading...'
+    })
+    .addCase(addAsyncWithStatus.fulfilled, (state, action) => {
+      state.status = '取得済'
+      state.count = state.count + action.payload;
+    })
+    .addCase(addAsyncWithStatus.rejected, (state) => {
+      state.status = 'エラー'
+    })
+    
+  }
+});
+
+const { add, minus } = counter.actions;
+
+const addAsyncWithStatus = createAsyncThunk(
+  'counter/asyncCount',
+  async (payload) => {
+    const response = await asyncCount(payload);
+    return response.data;
+  }
+)
+
+const addAsync = (payload) => {
+  return async (dispatch, getState) => {
+    const state = getState();
+    console.log(state);
+    const response = await asyncCount(payload);
+    dispatch(add(response.data));
+  }
+}
+
+
+export { add, minus, addAsync, addAsyncWithStatus }
+export default counter.reducer
+```
+
+- `asyncCount`モジュール：
+```jsx
+const asyncCount = (count = 1) => {
+  return new Promise((resolve) =>
+    setTimeout(() => resolve({ data: count }), Math.random() * 1000)
+  );
+};
+
+export { asyncCount };
+```
+
+- `Counter`コンポーネント：
+```jsx
+import { useSelector } from "react-redux"
+import { add, minus, addAsync, addAsyncWithStatus } from "../store/modules/counter"
+
+import CounterResult from "./CounterResult"
+import CounterButton from "./CounterButton"
+
+const Counter = () => {
+    const status = useSelector(state => state.counter.status);
+    return (
+        <>
+            <CounterResult />
+            <CounterButton step={2} calcType="+" actionCreator={add}/>
+            <CounterButton step={2} calcType="-" actionCreator={minus}/>
+            <CounterButton step={2} calcType="非同期(+)" actionCreator={addAsync}/>
+            <CounterButton step={2} calcType="非同期表示(+)" actionCreator={addAsyncWithStatus}/>
+            <h3>{status}</h3>
+        </>
+    )
+}
+export default Counter;
+```
+
+- `CounterResult`コンポーネント：
+```jsx
+import { useSelector } from "react-redux"
+const CounterResult = () => {
+  const count = useSelector(state => state.counter.count);
+  return <h3>{count}</h3>;
+};
+
+export default CounterResult;
+```
+
+- `CounterButton`コンポーネント：
+```jsx
+import { useDispatch } from "react-redux";
+
+const CounterButton = ({calcType, step, actionCreator}) => {
+    
+    const dispatch = useDispatch();
+    const clickHandler = () => {
+        // const action = calcType === '+' ? add(step) : minus(step);
+        dispatch(actionCreator(step));
+    }
+
+    return <button onClick={clickHandler}>{calcType}{step}</button>
+}
+export default CounterButton;
+```
+
 
 ## 149_Redux−Middlewareを作成してみよう
 [toTop](#)
