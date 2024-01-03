@@ -85,6 +85,7 @@ mv src/index.js src/main.jsx
 pnpm i
 pnpm i web-vitals -D
 # pnpm i redux react-redux @reduxjs/toolkit immer -S # additional install redux at section 13_redux
+# pnpm i axios -S # additional install redux at section 16_rest_api
 pnpm run dev
 # find src -name "*.js" -print
 # for filename in ` find src -name "*.js" -print ` ; do ls $filename; done
