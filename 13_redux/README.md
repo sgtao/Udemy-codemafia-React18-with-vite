@@ -492,11 +492,19 @@ export default CounterButton;
 ## 143_Redux−ToolkitでReduxを書き換えてみよう
 [toTop](#)
 
-* Reduxの推奨実装方法　Redux Toolkitで実装する
-* 全体ソースは[030_redux_toolkit/](./end/src/030_redux_toolkit/)
+* Redux Toolkit（RTK）による、Reduxの推奨実装方法を紹介
+  * RTK を使うことで、非推奨関数（`createStore`など）の利用を回避できる
 
-### ルートコンポネント
-- 共有ステートの定義は、`<Provider store=<ストア名>>...</Provider>`で囲む（Reduxと変更なし）
+### RTK 利用の前準備
+- RTK に関連するパッケージを追加
+```sh
+# pnpm i redux react-redux @reduxjs/toolkit immer -S
+pnpm i react-redux @reduxjs/toolkit immer -S
+```
+
+### ソースコード
+- [end source](./end/src/030_redux_toolkit/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 // POINT Redux Toolkitの使い方
 import Counter from "./components/Counter";
@@ -514,11 +522,11 @@ const Example = () => {
 export default Example;
 ```
 
-### ストアの定義
-- ストアのルート：`store/index.js`
+- `store`モジュール：
+  * `@reduxjs/toolkit`（RTK ）から、`configureStore`をインポート
   * ストアの定義は、`configureStore()`で定義
     + 引数にオブジェクトで、`reducer`のオブジェクトを定義
-```js
+```jsx
 import { configureStore } from "@reduxjs/toolkit";
 import reducer from "./modules/counter";
 
@@ -529,63 +537,61 @@ export default configureStore({
 });
 ```
 
-- ストアのモジュール：`store/modules/counter.js`
-  * reducerを作りには`createSlice()`を使う
-    * `initialState`プロパティに初期値を定義
-    * `reducers`プロパティに処理を定義。定義は関数を定義する（これがActionに相当する）
-      * Actionの引数は
-```js
+- `reducer`モジュール：
+  * Redux とは異なり、`Action Creator`の関数名として定義する
+  * `createSlice`をインポートして、`reducer`を定義する
+    * `name`, `initialState`, `reducers`を指定する
+    * `reducers`は、予め複数`Reducer`を定義することを想定している
+```jsx
 import { createSlice } from "@reduxjs/toolkit";
 
 const counter = createSlice({
   name: 'counter',
   initialState: 0,
   reducers: {
-    add(state, { /* type */, payload }) { // typeはなくても動作する
-      // console.log(type, payload)
-      // {type: 'counter/add', payload: 2}
-      console.log('add ', payload);
-
+    add(state, { type, payload }) {
+      console.log(type, payload)
       return state + payload;
     },
     minus(state, { type, payload }) {
-      console.log(type, payload);
-      // {type: 'counter/minus', payload: 2}
-
+      console.log(type, payload)
       return state - payload;
     }
   }
 })
 
-// Actionは、`actions`プロパティに
+
+// Action Creatorの関数には、`createSlice`オブジェクトの`actions`プロパティを定義する
+// - どうも、ここの`actions`の内容が自動的に作成されてるようだ
 const { add, minus } = counter.actions;
 
+// `Reducer`と`Action Creator`を外部から参照できるようにする`
 export { add, minus }
 export default counter.reducer
 ```
 
-### 共有ステートの更新・読出し
-- RTK使った場合、Actionの読出しはReduxと同じ利用ができる
-  * ステート更新（イベントハンドラー）
+
+- `Counter`コンポーネント：
 ```jsx
-import { useDispatch } from "react-redux";
-import { add, minus } from "../store/modules/counter"
+import CounterResult from "./CounterResult"
+import CounterButton from "./CounterButton"
 
-const CounterButton = ({calcType, step}) => {
-    
-    const dispatch = useDispatch();
-    
-    const clickHandler = () => {
-        const action = calcType === '+' ? add(step) : minus(step);
-        console.log(action)
-        dispatch(action);
-    }
-
-    return <button onClick={clickHandler}>{calcType}{step}</button>
+const Counter = () => {
+    return (
+        <>
+            <CounterResult />
+            <CounterButton step={2} calcType="+"/>
+            <CounterButton step={2} calcType="-"/>
+            <CounterButton step={10} calcType="+"/>
+            <CounterButton step={10} calcType="-"/>
+        </>
+    )
 }
-export default CounterButton;
+export default Counter;
 ```
-  * ステート読出し
+
+- `CounterResult`コンポーネント：
+  * ステートの参照は、`Redux`と同様に、`useSelector`オブジェクトから参照する
 ```jsx
 import { useSelector } from "react-redux"
 const CounterResult = () => {
@@ -596,12 +602,76 @@ const CounterResult = () => {
 export default CounterResult;
 ```
 
+- `CounterButton`コンポーネント：
+  * ステート更新（`Dispatch`）は、`Action Creator`の関数を呼び出し
+  * `useDispatch`オブジェクトで更新する
+```jsx
+import { useDispatch } from "react-redux";
+import { add, minus } from "../store/modules/counter"
+
+const CounterButton = ({calcType, step}) => {
+    
+    const dispatch = useDispatch();
+    console.log(add(step))
+    const clickHandler = () => {
+        const action = calcType === '+' ? add(step) : minus(step);
+        console.log(action)
+        dispatch(action);
+    }
+
+    return <button onClick={clickHandler}>{calcType}{step}</button>
+}
+export default CounterButton;
+```
+
 ## 144_Redux−Toolkitにおけるミュータブルな値の変更
 [toTop](#)
 
+- `Reducer`定義における、初期状態（`initialState`）がオブジェクトや配列だった場合の留意点を紹介
+- 下のような定義をしたときに注意する
+- `reducer`モジュール：
+  * サンプルコードでは、`initialState: 0`で値を定義しているのでイミュータブル
+  * `initialState: { count: 0 }`のような場合には実装に留意点がある
+  * 理由は、`Redux`においても純粋関数のルール（Immutability の保持）が推奨されるため
+```jsx
+import { createSlice } from "@reduxjs/toolkit";
+
+const counter = createSlice({
+  name: 'counter',
+  // initialState: 0,
+  initialState: {
+    count: 0,
+  },
+  reducers: {
+    add(state, { type, payload }) {
+      console.log(type, payload)
+      // return state + payload;
+      // // ステート更新を明示的に実装する場合、新たなステートを定義して更新する
+      // const newState = { ...state };
+      // newState.count = state.count + payload;
+      // return newState;
+      //
+      // ただし、RTK ではミュータブルな処理もイミュータブルに変えてくれる機能がある
+      // 上記のオブジェクトの定義を、下のように変更することができる
+      state.count = state.count + payload; // RTK により実装できる書き方
+      // オブジェクトプロパティ更新（ミュータブル操作）を書ける。
+      // RTK 内の`Immer`により、イミュータブルな処理に補正されて実行される
+    },
+    minus(state, { type, payload }) {
+      console.log(type, payload)
+      // return state - payload;
+      const newState = { ...state };
+      newState.count = state.count - payload
+      return newState
+    }
+  }
+})
+```
+
 ## 145_Immerを使ったミュータブルな値の変更
 [toTop](#)
-- Reduxは純粋関数なので、ステートを調節書き換えることはできない（イミュータブルが求められる）
+- Reduxは純粋関数なので、ステートを調節書き換えることはできない
+  * 「イミュータブルの保持」が求められる
   * Immerを使うことで、ステートの書き換えを行えるようにする
     * Immerを使うときは、`return`を付けることができなくなる
 
