@@ -24,7 +24,17 @@
 ## 126_useEffectとは？タイマーを作りながら学んでみよう
 [toTop](#)
 
-- `useEffect`の役割：コンポーネント内の処理を制御する
+- `useEffect`の役割：
+  * React コンポーネントは、JSX 構築する上では純粋関数として定義する
+    * 純粋関数の要件は、関数戻り値は入力(引数)で決定する。外部データは参照しない。引数変更しない
+    * 純粋関数の要件を満たさない操作は、**副作用**と呼ばれる
+    * しかし、機能実装する上で、副作用を伴う処理も必要になり、それを`useEffect`で定義する
+  * つまり、`useEffect`は、コンポーネント内の副作用の処理を定義する
+    * 副作用の例：下のすべてを`useEffect`内で実装しなくてよいが、副作用に該当している
+    * コンソールへのログ出力。開発環境上のメッセージ出力なので、除外
+    * DOM操作（`document`おぷbジェクトへの操作）。`useEffect`内で実装を推奨
+    * サーバとの通信、タイマー処理、ランダム値の生成　など。`useEffect`内で実装を推奨
+
 - `useEffect`の定義：
 ```jsx
 import { useEffect, useState } from "react";
@@ -565,7 +575,7 @@ const Timer = () => {
 export default Example;
 ```
 
-- `useTimer`コンポーネント：
+- `useTimer`フック：
 ```jsx
 import { useState, useEffect, useLayoutEffect } from "react";
 
@@ -681,7 +691,7 @@ const Example = () => {
 export default Example;
 ```
 
-- `useCount`コンポーネント：
+- `useCount`フック：
 ```jsx
 import { useState } from 'react';
 
@@ -717,7 +727,7 @@ const Example = () => {
 export default Example;
 ```
 
-- `useCount`コンポーネント：
+- `useCount`フック：
 ```jsx
 import { useState } from 'react';
 
