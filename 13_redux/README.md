@@ -673,21 +673,226 @@ const counter = createSlice({
 - Reduxは純粋関数なので、ステートを調節書き換えることはできない
   * 「イミュータブルの保持」が求められる
   * Immerを使うことで、ステートの書き換えを行えるようにする
-    * Immerを使うときは、`return`を付けることができなくなる
+  * 注意点：Immerを使うときは、`return`を付けない
+    * 理由は、オブジェクト内部を変えた時、新たなオブジェクトが作られてるため
+    * （イミュータブルとして処理されている）
 
-<br>
 
-* 全体ソースは[040_immer/](./end/src/040_immer/)
+### ソースコード
+- [end source](./end/src/040_immer/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT immerでイミュータブルな操作を行う方法
+import Counter from "./components/Counter";
+import { Provider } from "react-redux";
+import store from "./store"
+import "./immer";
 
+const Example = () => {
+  return (
+    <Provider store={store}>
+      <Counter />
+    </Provider>
+  );
+};
+
+export default Example;
+```
+
+- `immer`モジュール：参考情報
+  * `Immer`パッケージの動作を解説するために実装している
+```jsx
+import { produce } from "immer";
+
+const state = {
+    name: 'Tom',
+    hobbies: ['tennis', 'soccer']
+}
+
+// const newState = state;
+// newState.name = 'John';
+const newState = produce(state, draft => {
+    // draft.name = 'John';
+    // draft.hobbies[0] = 'baseball';
+
+    console.log(draft);
+    return [];
+})
+
+console.log(state, newState)
+```
 
 ## 146_Redux−Thunkとは？Redux−Middlewareとの関係
 [toTop](#)
 
+- Reduxで非同期処理をしたいときに、`Redux-Thunk`を利用する
+- Reduxでも純粋関数であることが求められるので、非同期処理は副作用となる
+  * そのため、`Redux-Thunk`を使うためには、`Redux−Middleware`という機能を使う
+
+ ①基本のRedux動作構成 | ②`Redux-MiddleWare`利用時の動作構成
+ -- | --
+ ![image](./images/1431_BasicRedux.png) | ![image](./images/1432_AsyncReduxWithMiddleWare.png)
+
+- ポイントは、**`Reducer`の外では非同期処理を実装する**こと
 
 ## 147_Redux−Thunkで非同期処理を記述してみよう
 [toTop](#)
-- Redux-Thunkを使うと、非同期処理でステートを更新できる
-* 全体ソースは[050_redux_thunk](./end/src/050_redux_thunk/)
+- `Redux-Thunk`の基本的な使い方として、非同期処理でステートを更新する実装を紹介
+- `Redux-Thunk`を使うと、非同期処理でステートを更新できる
+  * `Redux-Thunk`は、Redux-MiddleWareのライブラリ
+  * `Redux-Thunk`の定義方法は、`Actions-Creator`のように関数を定義する
+    * 関数の戻り値として、`dispatch`関数と`getState`関数が返ってくる
+```jsx
+// const thunkFunction = (payload) => {
+//   return (dispatch, getState) => { // getStateは現在の状態を参照できる
+//     副作用処理
+//   }
+// }
+```
+
+
+### ソースコード
+- [end source](./end/src/050_redux_thunk/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+import Counter from "./components/Counter";
+import { Provider } from "react-redux";
+import store from "./store"
+
+// POINT redux-thunkの定義
+// const thunkFunction = (payload) => {
+//   return (dispatch, getState) => {
+//     副作用処理
+//   }
+// }
+const Example = () => {
+  return (
+    <Provider store={store}>
+      <Counter />
+    </Provider>
+  );
+};
+
+export default Example;
+```
+
+- `store`モジュール：
+```jsx
+import { configureStore } from "@reduxjs/toolkit";
+import reducer from "./modules/counter";
+
+export default configureStore({
+  reducer: {
+    counter: reducer
+  }
+});
+```
+
+- `reducer`モジュール：
+```jsx
+import { createSlice } from "@reduxjs/toolkit";
+
+import { asyncCount } from "../../api/counter"
+
+const counter = createSlice({
+  name: 'counter',
+  initialState: {
+    count: 0
+  },
+  reducers: {
+    add(state, { type, payload }) {
+      state.count = state.count + payload;
+      // const newState = { ...state };
+      // newState.count = state.count + payload
+      // return newState;
+    },
+    minus(state, { type, payload }) {
+      state.count = state.count - payload;
+      // const newState = { ...state };
+      // newState.count = state.count - payload
+      // return newState;
+    }
+  }
+});
+
+const { add, minus } = counter.actions;
+
+const addAsync = (payload) => {
+  // Redux-Thunkによる、`dispatch`と`getState`の生成
+  return async (dispatch, getState) => {
+    const state = getState();
+    console.log(state);
+    const response = await asyncCount(payload);
+    dispatch(add(response.data));
+  }
+}
+
+export { add, minus, addAsync }
+export default counter.reducer
+```
+
+- `asyncCount`モジュール：
+  * 講座のサンプルでは、`Promise`オブジェクトで非同期処理を実装
+  * クライアントのみで疑似的に応答するように実装
+```jsx
+const asyncCount = (count = 1) => {
+  return new Promise((resolve) =>
+    setTimeout(() => resolve({ data: count }), Math.random() * 1000)
+  );
+};
+
+export { asyncCount };
+```
+
+- `Counter`コンポーネント：
+```jsx
+// `reducer`モジュールから、Actoin Creatorの関数をインポートする
+import { add, minus,addAsync } from "../store/modules/counter"
+
+import CounterResult from "./CounterResult"
+import CounterButton from "./CounterButton"
+
+const Counter = () => {
+    return (
+        <>
+            <CounterResult />
+            <CounterButton step={2} calcType="+" actionCreator={add}/>
+            <CounterButton step={2} calcType="-" actionCreator={minus}/>
+            <CounterButton step={2} calcType="非同期(+)" actionCreator={addAsync}/>
+        </>
+    )
+}
+export default Counter;
+```
+
+- `CounterResult`コンポーネント：
+```jsx
+import { useSelector } from "react-redux"
+const CounterResult = () => {
+  const count = useSelector(state => state.counter.count);
+  return <h3>{count}</h3>;
+};
+
+export default CounterResult;
+```
+
+- `CounterButton`コンポーネント：
+```jsx
+import { useDispatch } from "react-redux";
+
+const CounterButton = ({calcType, step, actionCreator}) => {
+    const dispatch = useDispatch();
+    const clickHandler = () => {
+        // const action = calcType === '+' ? add(step) : minus(step);
+        dispatch(actionCreator(step));
+    }
+
+    return <button onClick={clickHandler}>{calcType}{step}</button>
+}
+export default CounterButton;
+```
+
+
 
 ## 148_非同期処理のステータスを画面に表示してみよう
 [toTop](#)
