@@ -23,6 +23,9 @@
 ## 136_セクション紹介
 [toTop](#)
 
+- `Redux` の追加い方を紹介
+  * `Redux` は、React と一緒に使われることが多い、状態管理を行うライブラリ
+
 ## 137_Reduxとグローバルな状態管理
 [toTop](#)
 
@@ -31,8 +34,8 @@
   * Reactと利用する場合、`react-redux`パッケージもインストールする
 - **Redux Toolkit（RTK）**とは、公式で推奨する設定やコーディングをまとめたもの
   * 素のReduxはほかのライブラリで補強するケースが多いため、それらを１パッケージにした
-  * RTKが含むもの、`Redux(?)`、Immer、redux-thunk, createSliceなど
-  * 本セクションでもRTKをりようする
+  * RTKが含むもの、`Redux(?)`、`Immer`、`redux-thunk`, `createSlice`など
+  * 本セクションでもRTK を利用する
 
 <br>
 
@@ -61,17 +64,15 @@
 ### パッケージインストール＆スタート
 ```sh
 cd 13_redux/end
-npm i
-npm start
+pnpm i
+pnpm start
 ```
 
 #### 既存のReactアプリにインストールする場合
 ```sh
 # If you use npm:
-npm install @reduxjs/toolkit react-redux -S
+pnpm install @reduxjs/toolkit react-redux -S
 ```
-
-
 
 ### 講義のコードに切り替える方法
 - **App.js**で、`import`文のコメントアウト・コメントなしの行をかえる
@@ -86,7 +87,35 @@ import Example from "./010_redux_no_rtk/Example"; // 次節用のコード
 // import Example from "./050_redux_thunk/Example";
 // import Example from "./060_createAsyncThunk/Example";
 // import Example from "./070_middleware/Example";
+...
+```
 
+### 参考）`start`フォルダの構築コマンド
+
+```sh
+export TARGET_DIRNAME="13_redux"
+cd $TARGET_DIRNAME
+npm create vite@latest start -- --template react
+# sometime need to answer to inquiry proceed
+#
+cd start
+rm -rf src
+cp -r ../../00_references/99_react-guide-material/${TARGET_DIRNAME}/start/src .
+# cp -r ../00_references/11_Udemy_React18-complete-guide/04_react_basic/README.md .
+mv src/index.js src/main.jsx
+pnpm i
+pnpm i web-vitals -D
+pnpm i redux react-redux @reduxjs/toolkit immer -S
+pnpm run dev
+# find src -name "*.js" -print
+for filename in ` find src -name "*.js" -print ` ; do ls $filename;  modFilename=`echo $filename |  sed -e "s/.js/.jsx/" `; mv $filename $modFilename ; done
+for filename in ` find src -name "*.js" -print ` ; do ls $filename; done
+pnpm run dev
+#
+# convert to UTF file
+for filename in `find src -name "*.jsx"` ; do ls $filename; nkf_to_utffile $filename; done
+for filename in `find src -name "*.css"` ; do ls $filename; nkf_to_utffile $filename; done
+#
 
 ```
 
