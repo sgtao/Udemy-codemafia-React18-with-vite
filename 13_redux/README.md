@@ -116,17 +116,19 @@ pnpm run dev
 for filename in `find src -name "*.jsx"` ; do ls $filename; nkf_to_utffile $filename; done
 for filename in `find src -name "*.css"` ; do ls $filename; nkf_to_utffile $filename; done
 #
-
 ```
 
 
 ## 139_Reduxを使ってみよう
 [toTop](#)
 
-* 全体ソースは[010_redux_no_rtk](./end/src/010_redux_no_rtk/)
+* Redux Took Kit（RTK）を利用しない`Redux`の利用方法を紹介
+  * 現在はRTK 利用が主流なので、参考として紹介
+  * 講義では、`useContext`（Context Privider）利用からの変更として紹介
 
-### Rootコンポーネント
-- この講義では、`Counter`コンポーネント内で共有ステートを利用する
+### ソースコード
+- [end source](./end/src/010_redux_no_rtk/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 // POINT 素のReduxでグローバルな状態管理を記述してみよう
 import Counter from "./components/Counter";
@@ -144,14 +146,15 @@ const Example = () => {
 export default Example;
 ```
 
-### storeモジュール
-- まずステートを定義する
-```js
-import { createStore } from "redux"; 
-// ↑　redux 4.2では、Redux Toolkit利用させたいので、'createStore' は非推奨となってる
+- `store`モジュール：
+  - まずステートを定義する
+```jsx
+import { createStore } from "redux"; // `createStore` is already deprecated.
 
 const initialState = 0;
-// useReducerと同様に処理内容を関数として定義する
+// `reducer`の登録：
+// * 第一引数：状態
+// * 第二引数：アクション
 const reducer = (state = initialState, { type, step }) => {
     switch (type) {
       case "+":
@@ -168,8 +171,7 @@ export default createStore(
 );
 ```
 
-### `Counter`コンポーネント
-- 四つの`CounterButton`コンポーネントで１つのステートを操作する
+- `Counter`コンポーネント：
 ```jsx
 import CounterResult from "./CounterResult"
 import CounterButton from "./CounterButton"
@@ -188,42 +190,34 @@ const Counter = () => {
 export default Counter;
 ```
 
-#### カウンター値（CountResult.js）
+- `CounterResult`コンポーネント：
+  - ステートの参照は、`useSelector`を利用する
+```jsx
+// 2023/10 存在しないファイルのimportでエラーが出るため修正
+// 使用していないCounterContextのimport削除
 
-- ステートの読出しは、`useSelector`を利用する
-
-```js
 import { useSelector } from "react-redux"
 const CounterResult = () => {
-  // const state = useCounter();
   const state = useSelector(state => state);
-  console.log(state);
-  return <h3>{state.counter}:{state.counter2}</h3>;
+  return <h3>{state}</h3>;
 };
 
 export default CounterResult;
 ```
 
-#### カウンター操作（CounterButton.js）
-
-- ステートの更新は、`useDispatch`を利用する
-
-```js
-// import { useDispatch } from "react-redux";
-// import { useDispatch } from "redux";
-import React from 'react'
-import { useDispatch } from 'react-redux'
-// import { useCounterDispatch } from "../context/CounterContext";
+- `CounterButton`コンポーネント：
+  - ステートの更新は、`useDispatch`を利用する
+```jsx
+import { useDispatch } from "react-redux";
+// 使用していないCounterContextのimport削除
 
 const CounterButton = ({calcType, step}) => {
-    // 更新用オブジェクト作成
+
     const dispatch = useDispatch();
     // const dispatch = useCounterDispatch();
-    
+
     const clickHandler = () => {
-        // イベントハンドラー内で、呼び出し
-        dispatch({ type: calcType, step }); // `type`, `value`を指定
-        // `type`・`value`をどう扱うのか？は、`store/index.js`に定義する
+        dispatch({ type: calcType, step });
     }
 
     return <button onClick={clickHandler}>{calcType}{step}</button>
@@ -241,6 +235,13 @@ export default CounterButton;
 |-----|-----|
 | `useSelector()`でステート読出し | `useDispatch()`で前stateを参照しながら更新 |
 | ![image](./images/1401_ReduxGlobalState.png) | ![image](./images/1402_ReduxReducer.png) |
+
+### マフィア先生の解説：
+- `Redux`の場合、一つのグローバルストア（`Store`）を提供している
+  * グローバルに`Reducer`を登録する（`CreateStore`が該当）
+  * `Reducer`は複数登録することができる
+  * `Reducer`からステート（`State`）を読み出す
+- 読み出した`State`を、UI上で新たな状態に更新して、`Dispatch`を通して`Store`を更新する
 
 
 ## 141_複数のReducerを使う方法
