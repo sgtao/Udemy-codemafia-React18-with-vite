@@ -1068,7 +1068,74 @@ export default CounterButton;
 ## 149_Redux−Middlewareを作成してみよう
 [toTop](#)
 
+- カスタム（自作）のMiddlewareを作成する方法を紹介
+  * 実際は、あまりカスタマイズすることはないので、参考程度に知っておく
+  * むずかし...
+
 * 全体ソースは[070_middleware](./end/src/070_middleware/)
+
+### ソースコード
+- [end source](./end/src/070_middleware/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT Redux Middlewareの定義
+import Counter from "./components/Counter";
+import { Provider } from "react-redux";
+import store from "./store"
+
+const reduxMiddleware = (store) => {
+  return (next) => {
+    return (action) => {
+      // 全てのdispatchで行われる処理
+      // storeはaction前の状態
+      // （store.getState()でステートを取得）
+      next(action);
+      // storeはaction後の状態
+    };
+  }
+}
+const Example = () => {
+  return (
+    <Provider store={store}>
+      <Counter />
+    </Provider>
+  );
+};
+
+export default Example;
+```
+
+- `store`モジュール：
+```jsx
+import { configureStore } from "@reduxjs/toolkit";
+import reducer from "./modules/counter";
+import logger from "./middleware/logger" // 自作のMiddlewre
+export default configureStore({
+  reducer: {
+    counter: reducer
+  },
+  // middlewareを追加するためのプロパティ定義
+  // `getDefaultMiddlewre`の返り値は配列となる
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger)
+});
+```
+
+- `logger`モジュール：自作Middleware
+```jsx
+const logger = (store) => {
+  return (next) => {
+    return (action) => {
+      console.log('変更前', action, store.getState())
+      next(action);
+      console.log('変更後',action, store.getState())
+      // storeはaction後の状態
+    };
+  };
+};
+
+export default logger;
+```
+
 
 ## 150_セクションまとめ
 [toTop](#)
