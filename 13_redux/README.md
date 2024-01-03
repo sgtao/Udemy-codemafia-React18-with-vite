@@ -364,18 +364,37 @@ export default CounterButton;
 ## 142_Action−CreatorでActionを定義してみよう
 [toTop](#)
 
-* `Action-Creator`を使うと、処理を関数で定義することでミスの少ない実装ができる
-* 全体ソースは[020_actionCreator](./end/src/020_actionCreator/)
+* `Action-Creator`とは、アクションを作成する関数のこと
+  * 処理を関数で定義することでミスの少ない`reducer`を実装できる
+  * `reducer`部分を別モジュールで定義する
+    * 定義するときは、一般的に引数`payload`と定義する
+  * `Action-Creator`では、`dispatch`のエントリーを別関数として定義する
+    * RTKでは、`Action-Creator`の関数定義を自動実施される
 
-### 事前準備（ストアのモジュール分割）
-- `store/index.js`はプロパティ毎にファイル分割が行える（コード整理ができる）
+### ソースコード
+- [end source](./end/src/020_actionCreator/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT Action CreatorとActionの関係
+import Counter from "./components/Counter";
+import { Provider } from "react-redux";
+import store from "./store"
 
-#### ストア機能のトップ
-- `store/index.js`から、counter用のreducer（`modules/counter`）を読み込む
-```js
+const Example = () => {
+  return (
+    <Provider store={store}>
+      <Counter />
+    </Provider>
+  );
+};
+
+export default Example;
+```
+
+- `store`モジュール：
+```jsx
 import { createStore, combineReducers } from "redux";
 import { reducer } from "./modules/counter"
-
 
 const reducers = combineReducers({
   counter: reducer,
@@ -384,13 +403,11 @@ const reducers = combineReducers({
 export default createStore(reducers);
 ```
 
-- `modules/counter.js`
-  * reducerと`add`,`minus`をexportする
-  * reducerの引数は、`step`から`payload`と命名変更する（こちらが一般的）
-  * `add`と`minus`を使ってActionを作る
-```js
+- `reducer`モジュール：
+```jsx
 const initialState = 0;
 
+// `reducer`定義の本体
 const reducer = (state = initialState, { type, payload }) => {
   switch (type) {
     case "counter/+":
@@ -402,10 +419,13 @@ const reducer = (state = initialState, { type, payload }) => {
   }
 };
 
+// `reducer`を呼び出すエントリーの関数を定義
+// - `Action-Create`により、自動的に`dispatch({ type: 'counter/+', payload})が呼ばれる
 const add = (payload) => {
     return {
         type: "counter/+",
-        payload
+        // payload: payload
+        payload // プロパティ名と値が同盟の時は省略できる
     }
 }
 
@@ -419,23 +439,48 @@ const minus = (payload) => {
 export { reducer, add, minus }
 ```
 
-### Actionの定義（`CounterButton.js`）
-- `components/CounterButton.js`の`action`関数がAction
+- `Counter`コンポーネント：
+```jsx
+import CounterResult from "./CounterResult"
+import CounterButton from "./CounterButton"
+
+const Counter = () => {
+    return (
+        <>
+            <CounterResult />
+            <CounterButton step={2} calcType="+"/>
+            <CounterButton step={2} calcType="-"/>
+            <CounterButton step={10} calcType="+"/>
+            <CounterButton step={10} calcType="-"/>
+        </>
+    )
+}
+export default Counter;
+```
+
+- `CounterResult`コンポーネント：
+```jsx
+import { useSelector } from "react-redux"
+const CounterResult = () => {
+  const state = useSelector(state => state);
+  return <h3>{state.counter}</h3>;
+};
+
+export default CounterResult;
+```
+
+- `CounterButton`コンポーネント：
 ```jsx
 import { useDispatch } from "react-redux";
 import { add, minus } from "../store/modules/counter"
 
 const CounterButton = ({calcType, step}) => {
-    
-    const dispatch = useDispatch();
-    
-    const clickHandler = () => {
-        // actionがAction。typeにより、メソッドけいゆでreducerの処理を指定
-        const action = calcType === '+' ? add(step) : minus(step);
-        console.log(action);
-        // {type: 'counter/+', payload: 2} // Actionの中身
 
-        // actionをdispatchすると、Reducerが動作する
+    const dispatch = useDispatch();
+
+    const clickHandler = () => {
+        const action = calcType === '+' ? add(step) : minus(step);
+        console.log(action)
         dispatch(action);
     }
 
@@ -443,9 +488,6 @@ const CounterButton = ({calcType, step}) => {
 }
 export default CounterButton;
 ```
-
-- ⇒　Redux Toolkitを使うと、Actionは自動的に作ってくれる
-
 
 ## 143_Redux−ToolkitでReduxを書き換えてみよう
 [toTop](#)
