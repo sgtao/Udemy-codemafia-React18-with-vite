@@ -1140,3 +1140,10 @@ export default logger;
 ## 150_セクションまとめ
 [toTop](#)
 
+- `Redux`とは、Reactとは別の、状態管理をするためのライブラリ
+  * Reactで利用するために、`redux`と`react-redux`のパッケージをインストールする
+  - `Redux`を推奨通りに実装するために`Redux-Toolkit`も用意されている
+- `Redux`は一つのグローバルステートを使って、複数の状態を`reducers`に登録する
+  * 参照は `reducer` から参照
+  * 更新は `dispatch`を使って更新
+
