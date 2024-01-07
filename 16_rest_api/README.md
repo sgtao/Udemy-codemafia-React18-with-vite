@@ -801,6 +801,7 @@ const Item = ({ todo }) => {
   * その時々でモジュール読込み、モジュール切り替えができるようになる
 
 ### 通常のimport処理
+- `import`文より、ソースをコンパイルするときに外部モジュールをインポートする
 ```jsx
 import { add } from "./add";
 const Example = () => {
@@ -810,7 +811,23 @@ const Example = () => {
 export default Example;
 ```
 
-### ダイナミックインポートを利用した処理
+### ダイナミックインポートの処理
+- 非同期処理で`import()`メソッドを実行して、外部モジュールをインポートする
+  * この処理はReactでなくても実装できる
+```jsx
+// import { add } from "./add";
+const Example = () => {
+    const dynamicImport = async () => {
+        const module = await import("./add");
+    }
+    dynamicImport(); // このタイミングでインポート（併せて、非同期で読み込む）
+    // console.log(add(1,2))
+};
+```
+
+#### ソースコード：
+- [end source](./src/070_dynamic_import/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 // POINT ダイナミックインポートとは
 const Example = () => {
@@ -819,21 +836,21 @@ const Example = () => {
         // console.log(module);
     }
     dynamicImport();
-
     // console.log(add(1,2))
-    console.log(module(1,2));
 };
 
 export default Example;
 ```
 
-
 ## 179_【発展】コンポーネントのダイナミックインポート
 [toTop](#)
 
-- Reactのコンポーネントをダイナミックインポートで読み込んでみる
-  * Reactの`lazy`で動的にコンポーネントを詠み込める
-  * 読込みをしているのをユーザに示すため、Suspenseコンポーネントが用意されている
+- Reactのコンポーネントをダイナミックインポートを拡張した`lazy`を紹介
+  * Reactの`lazy`で、ダイナミックインポートが行える（動的にコンポーネントを詠み込める）
+  ```jsx
+  // lazy経由でimport関数を使う
+  const LazyComponentA = lazy(() => import('./components/ComponentA'))
+  ```
   * ネットワーク処理を疑似的に遅くしたい場合、ChromeDevToolsで変更できる
     * ネットワークのプリセット処理を『低速 3G』に変更する
 
@@ -845,7 +862,6 @@ import ComponentA from "./components/ComponentA";
 
 const Example = () => {
   const [compA, setCompA] = useState(true);
-
   return (
     <>
       <button onClick={() => {
@@ -863,6 +879,7 @@ export default Example;
 ```jsx
 // POINT コンポーネントをダイナミックインポート
 import { useState, lazy, Suspense, startTransition } from "react";
+// import ComponentA from "./components/ComponentA";
 
 // lazy経由でimport関数を使う
 const LazyComponentA = lazy(() => import('./components/ComponentA'))
@@ -880,7 +897,10 @@ const Example = () => {
         })
       }}>ComponentA</button>
 
-      {/* Suspenseコンポーネントで囲むとlazyの読出し中の表示を切り替えられる */}
+      {/*
+      * 読込みをしているのをユーザに認識できるように、Suspenseコンポーネントが用意
+      * Suspenseコンポーネントで囲むとlazyの読出し中の表示を切り替えられる
+      */}
       <Suspense fallback={<div>Loading!!!!!!!!</div>}>
         {compA ? <LazyComponentA /> : <LazyComponentB />}
       </Suspense>
@@ -889,4 +909,54 @@ const Example = () => {
 };
 
 export default Example;
+```
+
+#### ソースコード：
+- [end source](./src/080_react_lazy/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT コンポーネントをダイナミックインポート
+import { useState, lazy, Suspense, startTransition } from "react";
+
+const LazyComponentA = lazy(() => import('./components/ComponentA'))
+const LazyComponentB = lazy(() => import('./components/ComponentB'))
+
+const Example = () => {
+  const [compA, setCompA] = useState(true);
+
+  return (
+    <>
+      <button onClick={() => {
+        startTransition(() => {
+          setCompA((prev) => !prev)
+        })
+      }}>ComponentA</button>
+      <Suspense fallback={<div>Loading!!!!!!!!</div>}>
+        {compA ? <LazyComponentA /> : <LazyComponentB />}
+      </Suspense>
+    </>
+  );
+};
+
+export default Example;
+```
+
+- `LazyComponentA`コンポーネント：
+```jsx
+const ComponentA = () => {
+  return <h3>Loaded ComponentA!</h3>;
+};
+
+console.log('loaded componentA')
+
+export default ComponentA;
+```
+
+- `LazyComponentB`コンポーネント：
+```jsx
+const ComponentB = () => {
+  return <h3>Loaded ComponentB!</h3>;
+};
+
+export default ComponentB;
 ```
