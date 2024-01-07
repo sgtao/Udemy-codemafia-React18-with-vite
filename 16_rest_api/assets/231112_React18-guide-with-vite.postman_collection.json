@@ -1,0 +1,185 @@
+{
+	"info": {
+		"_postman_id": "17b9441c-4cfb-4009-9a7b-37f8e2eee0fd",
+		"name": "231112_React18-guide-with-vite",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19780948",
+		"_collection_link": "https://solar-space-911390.postman.co/workspace/My-Workspace~950da59b-f46d-4b0e-839f-76ec9a990612/collection/19780948-17b9441c-4cfb-4009-9a7b-37f8e2eee0fd?action=share&source=collection_link&creator=19780948"
+	},
+	"item": [
+		{
+			"name": "11_getAllTodo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/todo/",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"todo",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "12_getAllUser",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/user/",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "21_postUser",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"test追加\",\r\n    \"age\": 99,\r\n    \"hobbies\": [\r\n        \"カメラ\",\r\n        \"動画\"\r\n    ],\r\n    \"premiumAccount\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/user/",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "22_getUser4",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"test追加\",\r\n    \"age\": 99,\r\n    \"hobbies\": [\r\n        \"カメラ\",\r\n        \"動画\"\r\n    ],\r\n    \"premiumAccount\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/user/4",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						"4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "23_putUser4",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"test追加\",\r\n    \"age\": 99,\r\n    \"hobbies\": [\r\n        \"旅行\",\r\n        \"カメラ\",\r\n        \"動画\"\r\n    ],\r\n    \"premiumAccount\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/user/4",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						"4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "23_patchUser4",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"age\": 11\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/user/4",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						"4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "24_deleteUser4",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/user/4",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						"4"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

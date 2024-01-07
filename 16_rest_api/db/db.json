@@ -22,21 +22,29 @@
       "id": 1,
       "username": "hoge太郎",
       "age": 20,
-      "hobbies": ["サッカー", "野球"],
+      "hobbies": [
+        "サッカー",
+        "野球"
+      ],
       "premiumAccount": true
     },
     {
       "id": 2,
       "username": "fuga太郎",
       "age": 17,
-      "hobbies": ["カメラ"],
+      "hobbies": [
+        "カメラ"
+      ],
       "premiumAccount": false
     },
     {
       "id": 3,
       "username": "piyo三郎",
       "age": 50,
-      "hobbies": ["筋トレ", "水泳"],
+      "hobbies": [
+        "筋トレ",
+        "水泳"
+      ],
       "premiumAccount": true
     }
   ]

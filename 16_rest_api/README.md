@@ -4,16 +4,16 @@
 
 ## 講座一覧
 - [169_セクション紹介](#169_セクション紹介)
-- [170_REST−APIとは？](#170_REST−APIとは？)
-- [171_JSONとは？](#171_JSONとは？)
-- [172_JSON−ServerでモックアップAPIを作成](#172_JSON−ServerでモックアップAPIを作成)
-- [173_Axiosを使ってサーバーからデータを取得しよう](#173_Axiosを使ってサーバーからデータを取得しよう)
+- [170_REST−APIとは？](#170_rest−apiとは)
+- [171_JSONとは？](#171_jsonとは)
+- [172_JSON−ServerでモックアップAPIを作成](#172_json−serverでモックアップapiを作成)
+- [173_Axiosを使ってサーバーからデータを取得しよう](#173_axiosを使ってサーバーからデータを取得しよう)
 - [174_取得したデータを画面に反映してみよう](#174_取得したデータを画面に反映してみよう)
-- [175_GUIでリクエストの状態を確認しよう](#175_GUIでリクエストの状態を確認しよう)
+- [175_GUIでリクエストの状態を確認しよう](#175_guiでリクエストの状態を確認しよう)
 - [176_更新リクエストをサーバーに送信してみよう](#176_更新リクエストをサーバーに送信してみよう)
 - [177_リクエストと画面処理を統合しよう](#177_リクエストと画面処理を統合しよう)
-- [178_【発展】ダイナミックインポートとは？](#178_【発展】ダイナミックインポートとは？)
-- [179_【発展】コンポーネントのダイナミックインポート](#179_【発展】コンポーネントのダイナミックインポート)
+- [178_【発展】ダイナミックインポートとは？](#178_発展ダイナミックインポートとは)
+- [179_【発展】コンポーネントのダイナミックインポート](#179_発展コンポーネントのダイナミックインポート)
 
 
 ## 169_セクション紹介
@@ -263,20 +263,44 @@ npm run start:api
 [toTop](#)
 
 ### Axiosのインストール
+- インストール済みですが、もし個別にインストールする場合は以下を実行する
 ```sh
-npm i axios -S
+pnpm i axios -S
 ```
 
 ### Aixosを使ったGETメソッド
 
-- サンプルコード：[040_axios_get_request](./src/040_axios_get_request/end/Example.js)
+- 実装ポイント
   * `import axios from "axios";`で読み込み
-  * `useEffect()`内で`axios.get(<URI>)`を利用
-    * 非同期処理を`async`-`await`で同期化
-    * ただし、`async`は`useEffect()`内にもう一つ関数を作って指定する
-      + `useEffect(async() => {...})`と書くとエラーするため
+  * 非同期処理で、`axios.get()`メソッドを実行する
+    * `Promise`で、thenでつなげる
+    * `async`-`await`で同期化
+  * 画面表示の時に、`axios.get()`で取得する場合、
+    * `useEffect()`内で`axios.get(<URI>)`を利用
+      * 非同期処理を`async`-`await`で同期化
+      * ただし、`async`は`useEffect()`内にもう一つ関数を作って指定する必要がある
+      + 理由：`useEffect(async() => {...})`と書くとエラーするため
+```jsx
+import { useEffect } from "react";
+import axios from "axios";
 
+// axiosでリクエストを送信
+const Example = () => {
+  useEffect(() => {
+    const getUser = async () => {
+      // res に応答データをセット
+      const res = await axios.get('http://localhost:3003/user')
+      console.log(res.data)
+    }
+    getUser();
+  })
+  ...
+};
+```
 
+### ソースコード
+- [end source](./src/040_axios_get_request/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 // POINT axiosでGetリクエスト
 // https://axios-http.com/
@@ -289,19 +313,9 @@ const Example = () => {
   useEffect(() => {
     const getUser = async () => {
       const res = await axios.get('http://localhost:3003/user')
-
-      // 取得したレスポンスはJSONデータをObjectに変換されてるので、そのまま利用できる
       console.log(res.data)
-      // 
     }
-    // `getUser`のreturnで返す場合、Promiseで記述する
-    // const getUser = () => {
-    //     axios.get('http://localhost:3003/user').
-    //         then((res) => {
-    //             return res;
-    //         })
-    // }
-    getUser(); // ここで実行される
+    getUser();
   })
 };
 
@@ -311,44 +325,50 @@ export default Example;
 ### 実行確認
 
 - 実行は、ChromeDevToolsの**ネットワークタブ**で確認できる
+  * フィルタ機能をオフ（`All`を指定）すると、全リクエストを確認できる
   * フィルタ機能で、`Fetch/XHR`のみにするとAPIリクエストがフィルタリングされて表示される
+
+![image](./images/1731_getUserViaAPI.png)
 
 
 ## 174_取得したデータを画面に反映してみよう
 [toTop](#)
 
-
-- サンプルコード：[050_axios_get_state](./src/050_axios_get_state/end/)
+### ソースコード
+- [end source](./src/050_axios_get_state/end/Example.jsx)
+- エントリーコンポーネント：
 ```jsx
 // POINT サーバーから取得したデータを画面表示
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 const Example = () => {
+
   const [ users, setUsers ] = useState()
-  // const [ users, setUsers ] = useState([]); // 応答形式が分かってたら空配列`[]`のセットでもよい
-  // サンプルコードは、オプショナルチェイン演算子（`users?`）で回避してる
 
   useEffect(() => {
     const getUser = async () => {
-      const res = await axios.get('http://localhost:3003/user')
-      // console.log(res.data);
-      // [{id: 1, username: "hoge太郎", age: 20, hobbies: ["サッカー", "野球"], premiumAccount: true},…]
-
+      const res = await axios.get('http://localhost:3003/user');
       // 取得後に画面更新するため、`setUsers()`で更新
       setUsers(res.data);
     }
     getUser();
-  }, []); // 
+  }, []); // `getUser()`は、初回レンダリングの時のみで実行する
 
   return (
     <div>
-      {/* `users?.`はオプショナルチェイン演算子という、初期値がからでもmap演算子をエラーにしない書き方*/}
+      {/*
+      - オプショナルチェイン演算子（`users?`）で、データが無い場合のエラーを回避
+      - 解説：`users`定義する際（`useState()`）、`undefined`になるので回避が必要
+        - `users`とした時、`useState() ～ useEffect内`setUsers`の間でエラーになる
+      */}
       {users?.map(user => {
         return (
+          /* key属性は、レスポンスの`user.id`を利用 */
           <div key={user.id}>
             <h3>{user.username}</h3>
             <p>age: {user.age}</p>
+            {/* `user.hobbies`は配列なので、表示の際に`,`で区切る */}
             <p>hobby: {user.hobbies.join(',')}</p>
           </div>
         )
@@ -356,21 +376,172 @@ const Example = () => {
     </div>
   )
 };
+
 export default Example;
 ```
-
 
 ## 175_GUIでリクエストの状態を確認しよう
 [toTop](#)
 
-- Restful APIのクライアントツールを使ってjson-serverにPOSTメソッド、GETメソッドでアクセスしてみる
+- クライアントアプリ以外で、jsonサーバのデータを更新する方法を紹介：
+  * Restful APIのクライアントツールを使ってPOSTメソッド、GETメソッドを投げてみる
+  * 利用ツール：Postman
+    * 参考サイト：『[Create and send API requests in Postman](https://learning.postman.com/docs/sending-requests/requests/)』
+- 手順：Postmanの`Collections`は[JSONファイル](./assets/231112_React18-guide-with-vite.postman_collection.json)にエクスポート
+  * `User`追加：Postmanで`POST`メソッドを選択し、Bodyをセットして、`Send`をクリック
+  * `Users`確認：Postmanで`GET`メソッドを選択し、`Send`をクリック
+  * `json-server`の反応を確認：`POST`メソッド・`GET`メソッドの受信を確認
+```sh
+[1]   \{^_^}/ hi!
+[1]
+[1]   Loading ./db/db.json
+[1]   Done
+[1]
+[1]   Resources
+[1]   http://localhost:3003/todo
+[1]   http://localhost:3003/user
+[1]
+...
+[1] POST /user/ 201 766.898 ms - 131
+[1] GET /user/ 200 3.499 ms - 599
+[1] GET /user 200 3.351 ms - 599
+```
+
+ １．`POST`で追加 | ２．`GET` で確認
+ -- | --
+ ![image](./images/1751_postUserViaPostman.png) | ![image](./images/1752_getUserViaPostman.png)
 
 
 ## 176_更新リクエストをサーバーに送信してみよう
 [toTop](#)
 
-- APIアクセス部分のみをJavaScriptで実装する
-- サンプルコード：[050_axios_get_stateend/api/todo.js](./src/060_other_method/end/api/todo.js)
+- 以前作成した『[ToDoアプリ](../06_control_and_form/README.md#071_todoアプリを作ってみよう)』をRESTful-APIで実弁してみる
+
+#### ソースコード：
+- [end source](./src/060_other_method/end/Example.jsx)
+- エントリーコンポーネント：
+```jsx
+// POINT Rest APIをaxiosで実装してみよう
+import Todo from "./components/Todo";
+
+const Example = () => {
+  return (
+    <>
+      <h2>Reminder</h2>
+      <Todo />
+    </>
+  );
+};
+
+export default Example;
+```
+
+- `Todo`コンポーネント：
+```jsx
+import List from "./List"
+import Form from "./Form"
+import { TodoProvider } from "../context/TodoContext"
+
+const Todo = () => {
+  return (
+    <TodoProvider>
+      <List />
+      <Form />
+    </TodoProvider>
+  )
+};
+export default Todo;
+```
+
+- `TodoProvider`モジュール：次セクションで解説
+```jsx
+import { createContext, useContext, useEffect, useReducer } from "react";
+import todoApi from "../api/todo";
+
+const TodoContext = createContext();
+const TodoDispatchContext = createContext();
+
+const todosList = [
+  {
+    id: 1,
+    content: "店予約する",
+    editing: false,
+  },
+  {
+    id: 2,
+    content: "卵買う",
+    editing: false,
+  },
+  {
+    id: 3,
+    content: "郵便出す",
+    editing: false,
+  },
+];
+
+const todoReducer = (todos, action) => {
+  switch (action.type) {
+    // 追加アクション：
+    // - 初回レンダリングで実行するアクション
+    case "todo/init":
+      return [...action.todos];
+
+    case "todo/add":
+      return [...todos, action.todo];
+
+    case "todo/delete":
+      return todos.filter((todo) => {
+        return todo.id !== action.todo.id;
+      });
+
+    case "todo/update":
+      return todos.map((_todo) => {
+        return _todo.id === action.todo.id
+          ? { ..._todo, ...action.todo }
+          : { ..._todo };
+      });
+
+    default:
+      return todos;
+  }
+};
+
+const TodoProvider = ({ children }) => {
+  const [todos, dispatch] = useReducer(todoReducer, []);
+
+  // 改造（追加）部分：
+  // - 初回レンダリングの時に、`todos`を更新する
+  useEffect(() => {
+    // `todos`の初期値は、前段に記載している内容：
+    // const todosList = [
+    // {
+    //   id: 1,
+    //   content: "店予約する",
+    //   editing: false,
+    // },
+    // ....
+    todoApi.getAll().then(todos => {
+      dispatch({ type: 'todo/init', todos })
+    })
+  }, [])
+
+  return (
+    <TodoContext.Provider value={todos}>
+      <TodoDispatchContext.Provider value={dispatch}>
+        {children}
+      </TodoDispatchContext.Provider>
+    </TodoContext.Provider>
+  );
+};
+
+const useTodos = () => useContext(TodoContext);
+const useDispatchTodos = () => useContext(TodoDispatchContext);
+
+export { useTodos, useDispatchTodos, TodoProvider };
+```
+
+- `todoApi`モジュール：
+  - 改造の最初は、APIアクセス部分のみをJavaScriptで実装する
 ```jsx
 // POINT axiosを用いたAPI
 import axios from 'axios';
@@ -380,6 +551,7 @@ const ENDPOINT_URL = 'http://localhost:3003/todo'
 const todoApi = {
     async getAll() {
         const result = await axios.get(ENDPOINT_URL);
+        // console.log(result);
         return result.data;
     },
     async post(todo) {
@@ -397,22 +569,229 @@ const todoApi = {
 }
 
 // APIアクセスの挙動を確認したい場合、関数を呼び出してみる
-todoApi.post({
-    id: 12345,
-    content: "test"
-});
+// todoApi.post({
+//     id: 12345,
+//     content: "test"
+// });
 
 export default todoApi;
 ```
 
+- `Form`コンポーネント：次セクションで説明
+```jsx
+import { useState } from "react";
+import { useDispatchTodos } from "../context/TodoContext";
+import todoApi from "../api/todo";
+
+const Form = () => {
+  const [enteredTodo, setEnteredTodo] = useState("");
+  const dispatch = useDispatchTodos();
+
+  const addTodo = (e) => {
+    e.preventDefault();
+
+    const newTodo = {
+      id: Math.floor(Math.random() * 1e5),
+      content: enteredTodo,
+      editing: false
+    };
+
+    todoApi.post(newTodo).then(newTodo => {
+      dispatch({ type: 'todo/add', todo: newTodo});
+      setEnteredTodo("");
+    })
+
+  };
+  return (
+    <div>
+      <form onSubmit={addTodo}>
+        <input
+          type="text"
+          value={enteredTodo}
+          onChange={(e) => setEnteredTodo(e.target.value)}
+        />
+        <button>追加</button>
+      </form>
+    </div>
+  );
+};
+
+export default Form;
+```
+
+- `List`コンポーネント：次セクションで説明
+```jsx
+import { useTodos } from "../context/TodoContext";
+import Item from "./Item";
+
+const List = () => {
+  const todos = useTodos();
+  return (
+    <div>
+      {todos.map((todo) => (
+        <Item todo={todo} key={todo.id} />
+      ))}
+    </div>
+  );
+};
+
+export default List;
+```
+
+- `Item`コンポーネント：次セクションで説明
+```jsx
+import { useState } from "react";
+import { useDispatchTodos } from "../context/TodoContext";
+import todoApi from "../api/todo";
+
+const Item = ({ todo }) => {
+  const [editingContent, setEditingContent] = useState(todo.content);
+  const dispatch = useDispatchTodos();
+
+  const changeContent = (e) => setEditingContent(e.target.value);
+
+  const toggleEditMode = () => {
+    const newTodo = { ...todo, editing: !todo.editing };
+    todoApi.patch(newTodo).then((newTodo) => {
+      dispatch({ type: "todo/update", todo: newTodo });
+    });
+  };
+
+  const confirmContent = (e) => {
+    e.preventDefault();
+    const newTodo = {
+      ...todo,
+      editing: !todo.editing,
+      content: editingContent,
+    };
+    todoApi.patch(newTodo).then((newTodo) => {
+      dispatch({ type: "todo/update", todo: newTodo });
+    });
+  };
+
+  const complete = (todo) => {
+    todoApi.delete(todo).then(() => {
+      dispatch({ type: "todo/delete", todo });
+    });
+  };
+
+  return (
+    <div key={todo.id}>
+      <button onClick={() => complete(todo)}>完了</button>
+      <form onSubmit={confirmContent} style={{ display: "inline" }}>
+        {todo.editing ? (
+          <input type="text" value={editingContent} onChange={changeContent} />
+        ) : (
+          <span onDoubleClick={toggleEditMode}>{todo.content}</span>
+        )}
+      </form>
+    </div>
+  );
+};
+
+export default Item;
+```
+
+
+
 ## 177_リクエストと画面処理を統合しよう
 [toTop](#)
 
-- 練習問題：『Todoアプリに`axios`のデータアクセスを加えよう』
-- サンプルコード：[050_axios_get_state/end](./src/060_other_method/end/)
-  * `useContext`で状態管理しているステートにAPIアクセス処理を加えてる
-- 練習コード：[050_axios_get_state/start](./src/060_other_method/start/)
-  
+### 練習問題：
+- 『Todoアプリに`axios`のデータアクセスを加えよう』
+- [start code](./src/060_other_method/start/Example.jsx)
+
+### 変更内容
+- `Reducer`のアクションの処理データを、`axios`を使って取得・発行する
+  - `Reducer`のアクション定義は変更しない
+
+#### Todo一覧取得
+- `TodoProvider`モジュールで、初回レンダリング時に`todos`をGETメソッドで取得
+```jsx
+import { createContext, useContext, useEffect, useReducer } from "react";
+import todoApi from "../api/todo";
+...
+const TodoProvider = ({ children }) => {
+  const [todos, dispatch] = useReducer(todoReducer, []);
+
+  // 改造（追加）部分：
+  // - 初回レンダリングの時に、`todos`を更新する
+  useEffect(() => {
+    todoApi.getAll().then(todos => {
+      dispatch({ type: 'todo/init', todos })
+    })
+  }, [])
+```
+
+#### Todo追加
+- `Form`コンポーネントで、POSTメソッドを使用
+```jsx
+import { useDispatchTodos } from "../context/TodoContext";
+import todoApi from "../api/todo";
+
+const Form = () => {
+  const [enteredTodo, setEnteredTodo] = useState("");
+  const dispatch = useDispatchTodos();
+
+  const addTodo = (e) => {
+    e.preventDefault();
+
+    const newTodo = {
+      id: Math.floor(Math.random() * 1e5),
+      content: enteredTodo,
+      editing: false
+    };
+
+    // POSTメソッドが成功したのちに、Reducerのアクション（`dispatch()`メソッド）実行
+    todoApi.post(newTodo).then(newTodo => {
+      dispatch({ type: 'todo/add', todo: newTodo});
+      setEnteredTodo("");
+    })
+
+```
+
+#### Todo更新
+- `Item`コンポーネントで、PATCHメソッドを使用
+```jsx
+import { useState } from "react";
+import { useDispatchTodos } from "../context/TodoContext";
+import todoApi from "../api/todo";
+
+const Item = ({ todo }) => {
+  const [editingContent, setEditingContent] = useState(todo.content);
+  const dispatch = useDispatchTodos();
+
+  const changeContent = (e) => setEditingContent(e.target.value);
+
+  const toggleEditMode = () => {
+
+// 編集の開始／終了時点で、patchメソッド実行して、アクション実行して画面更新
+    const newTodo = { ...todo, editing: !todo.editing };
+    todoApi.patch(newTodo).then((newTodo) => {
+      dispatch({ type: "todo/update", todo: newTodo });
+    });
+  };
+
+  const confirmContent = (e) => {
+    e.preventDefault();
+    const newTodo = {...};
+    // patchメソッド実行して、アクション実行して画面更新
+    todoApi.patch(newTodo).then((newTodo) => {
+      dispatch({ type: "todo/update", todo: newTodo });
+    });
+  };
+```
+
+#### Todo追加
+- `Item`コンポーネントで、DELETEメソッドを使用
+```jsx
+  const complete = (todo) => {
+    todoApi.delete(todo).then(() => {
+      dispatch({ type: "todo/delete", todo });
+    });
+  };
+```
+
 
 ## 178_【発展】ダイナミックインポートとは？
 [toTop](#)
