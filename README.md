@@ -80,12 +80,18 @@ npm create vite@latest ${TARGET_DIRNAME} -- --template react
 cd ${TARGET_DIRNAME}/
 rm -rf src
 cp -r ../00_references/99_react-guide-material/${TARGET_DIRNAME}/src .
-# cp -r ../00_references/11_Udemy_React18-complete-guide/04_react_basic/README.md .
+#
+# for 16_rest_api, additional copy files
+# cp -p  ../00_references/99_react-guide-material/16_rest_api/package.json .
+# cp -pr ../00_references/99_react-guide-material/16_rest_api/db .
+#
+# rename entry point file
 mv src/index.js src/main.jsx
 pnpm i
 pnpm i web-vitals -D
 # pnpm i redux react-redux @reduxjs/toolkit immer -S # additional install redux at section 13_redux
-# pnpm i axios -S # additional install redux at section 16_rest_api
+# pnpm i axios -S # additional install at 16_rest_api
+# pnpm i json-server@0.17.0 concurrently -D # additional install at 16_rest_api
 pnpm run dev
 # find src -name "*.js" -print
 # for filename in ` find src -name "*.js" -print ` ; do ls $filename; done

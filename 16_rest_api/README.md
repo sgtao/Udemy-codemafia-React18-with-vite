@@ -19,54 +19,245 @@
 ## 169_セクション紹介
 [toTop](#)
 
+- RESTful APIを使って、サーバとの通信をどのようにハンドリングをするかを紹介
 
 ## 170_REST−APIとは？
 [toTop](#)
 
+- REST（RESTful）-APIとは、サーバへのリクエスト方式の一つ
+  * リソース毎にURI を定義
+  * メソッドでリソースに対する処理を定義
+    * POST、GET、PUT、DELETE など
+  * JSON でやり取りする
+- 基本的には、クライアント（PCのブラウザ）からサーバへのリクエスト方式
+
+### RESTful-APIの利用する／しない場合の処理の変化
+- REST-APIを使わない場合
+  * データの取得・作成・更新毎にURL+クエリパラメータを作成する
+  * やりたいことをURLかクエリパラメータに定義する
+- REST-API を使う場合
+  * やりたいことはメソッドで表現できる
 
 ## 171_JSONとは？
 [toTop](#)
 
+- JavaScript Object Notationの略語が、`JSON`
+  * Notationとは『記法』のことだから、『JavaScript Objectのような記法』という意味
+  * JavaScript のデータ定義文をベースとした、簡易的なデータ定義言語
+    * 様々な言語間のデータ通信の際に用いられることが多い
+    * 従来、XML が利用されてたが、冗長が少ないJSONの利用に移行してきてる
+  * ファイルの拡張子は、`json`
+    * JSONはコメントを許可しないが、拡張子が`jsonc`はコメントが記述できる
+    * 配列・オブジェクトの記法ルールに似ている
+      * オブジェクト（`Key-Value`）は、**Keyにも`"..."`で囲う必要がある**
+      * JavaScriptと異なり、オブジェクトValue が文字列の時、ダブルクォーテーション（`"..."`）で囲む
+      * JSONでは、オブジェクトや配列の末尾は`,`を付けない
+  
+
+### サンプルデータ
+- データサンプル：[end sample](./src/020_what_is_json/end/sample.jsonc)
+```jsonc
+// POINT JSONとは
+// JavaScript Object Notation の略称
+// JavaScript のデータ定義文をベースとした、簡易的なデータ定義言語
+// 様々な言語間のデータ通信の際に用いられることが多い
+// これまでは XML が利用されてきましたが、現在では簡易的な JSON が利用されることが増えています
+// JSON ファイルは拡張子 .json で記述する
+// 通常の json ファイルの場合はコメントを書くことができないが、 .jsonc にするとコメントを書くことができる。
+[
+  // オブジェクトのkeyはダブルコーテーションを使用する
+  {
+    "id": 1,
+    "username": "hoge太郎",
+    "age": 20,
+    "hobbies": [
+      "soccer"
+    ],
+    "premiumAccount": true
+  },
+  {
+    "id": 2,
+    "username": "fuga太郎",
+    "age": 17,
+    "hobbies": [
+      "カメラ"
+    ],
+    "premiumAccount": false
+  },
+  {
+    "id": 3,
+    "username": "piyo太郎",
+    "age": 20,
+    "hobbies": [
+      "筋トレ"
+    ],
+    "premiumAccount": true
+  }
+]
+```
+
+### サーバへのJSONデータをやりとりするには
+- JavaScriptの配列／オブジェクトをJSONデータ（の文字列）に変換して、やり取りする
+- クライアント⇒サーバへ送る場合：`JSON.stringify()`メソッドで変換する
+  - `JSON.stringify(配列／オブジェクト)`
+  - 変換したデータは文字列である
+```jsx
+  const usersData = [
+    {
+      id: 1,
+      username: "hoge太郎",
+      age: 20,
+      hobbies: ["soccer"],
+      premiumAccount: true
+    },
+    ...
+  ];
+  // JSON.stringify = オブジェクトや配列をJSON形式の文字列に変換する
+  const usersDataString = JSON.stringify(usersData);
+  // JSON形式の文字列が出力される
+  console.log(typeof usersDataString === 'string');
+```
+
+- サーバ⇒クライアントへ受け取る場合：`JSON.parse()`メソッドで変換する
+  - `JSON.parse（JSON文字列）`
+```jsx
+  // JSON形式の文字列をJavaScriptが認識できる形に変換する
+  console.log(JSON.parse(usersDataString));
+  // [
+  //   {
+  //     id: 1,
+  //     username: "hoge太郎",
+  //     age: 20,
+  //     hobbies: ["soccer"],
+  //     premiumAccount: true
+  //   },
+  //   ...
+  // ];
+```
+
+#### ソースコード：
+- [end source](./src/020_what_is_json/end/Example.jsx)
+- サンプルコード：
+```jsx
+const Example = () => {
+  const usersData = [
+    {
+      id: 1,
+      username: "hoge太郎",
+      age: 20,
+      hobbies: ["soccer"],
+      premiumAccount: true
+    },
+    {
+      id: 2,
+      username: "fuga太郎",
+      age: 17,
+      hobbies: ["カメラ"],
+      premiumAccount: false
+    },
+    {
+      id: 3,
+      username: "piyo太郎",
+      age: 20,
+      hobbies: ["筋トレ"],
+      premiumAccount: true
+    }
+  ];
+
+  // JSON.stringify = オブジェクトや配列をJSON形式の文字列に変換する
+  const usersDataString = JSON.stringify(usersData);
+
+  // JSON形式の文字列が出力される
+  console.log(typeof usersDataString === 'string');
+
+  // JSON形式の文字列をJavaScriptが認識できる形に変換する
+  console.log(JSON.parse(usersDataString));
+
+};
+
+export default Example;
+```
 
 ## 172_JSON−ServerでモックアップAPIを作成
 [toTop](#)
 
+### 単体での起動方法
+```sh
+# パッケージのインストール
+pnpm i json-server@0.17.0 -D
+# json-serverの実行（`npx`コマンド利用）
+# ポート番号は、クライアント側が決め打ち（`:3003`）のため、指定する
+npx json-server -w ./db/db.json -p 3003
+# npx json-server -w ./**/db.json -p 3003 # 任意のファイルを指定したい場合、`**`利用
+```
+
 ### APIサーバの準備はJSONファイルを準備する
 - `json-server`でJSONファイルを読み込むと内容に応じたレスポンスを返す
+- [sample data](./db/db.json)
+- サンプルデータ：
 ```json
-// cat ./db/db.json
 {
   "todo": [
     {
-      "id": "5d87d115-7ebb-4d17-adce-4ffe4b39f8c5", // idで参照できる
-      "content": "掃除",
-      "editing": true,
-      "completed": false
+      "id": "c5868bfe-fa1d-4891-acd3-bc43959a9bb7",
+      "content": "洗濯",
+      "editing": false
     },
-    ...
+    {
+      "id": "5d87d115-7ebb-4d17-adce-4ffe4b39f8c5",
+      "content": "掃除",
+      "editing": false
+    },
+    {
+      "id": "f2c38014-e2df-40ae-ac93-36303b8771ce",
+      "content": "買い物",
+      "editing": false,
+      "completed": false
+    }
   ],
   "user": [
     {
       "id": 1,
       "username": "hoge太郎",
       "age": 20,
-      "hobbies": [
-        "サッカー",
-        "野球"
-      ],
+      "hobbies": ["サッカー", "野球"],
       "premiumAccount": true
     },
-    ...
+    {
+      "id": 2,
+      "username": "fuga太郎",
+      "age": 17,
+      "hobbies": ["カメラ"],
+      "premiumAccount": false
+    },
+    {
+      "id": 3,
+      "username": "piyo三郎",
+      "age": 50,
+      "hobbies": ["筋トレ", "水泳"],
+      "premiumAccount": true
+    }
   ]
 }
 ```
 
 ### JSONサーバ起動方法
+- [package.json](./package.json)に指定済みのため、下のコマンドでもJSONサーバが起動される
+
 ```sh
-npx json-server -w ./db/db.json -p 3003
+npm run start:api
+# npm run dev # クライアント同時の場合
 ```
 
-
+#### `package.json`の指定
+```jsx
+  "scripts": {
+    "dev": "npx concurrently \"pnpm run start:client\" \"pnpm run start:api\"",
+    "start:api": "npx json-server -w ./db/db.json -p 3003",
+    "start:client": "vite",
+    ...
+  },
+```
 
 ## 173_Axiosを使ってサーバーからデータを取得しよう
 [toTop](#)
