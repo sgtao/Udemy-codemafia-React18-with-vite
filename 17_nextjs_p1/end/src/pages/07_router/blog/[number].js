@@ -5,5 +5,9 @@
 // http://localhost:4000/07_router/blog/4
 
 export default function Number() {
-    return <h1>[number].js</h1>
+    return (
+        <>
+            <h1>[number].js</h1>
+        </>
+    );
 }

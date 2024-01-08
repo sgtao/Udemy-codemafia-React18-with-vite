@@ -188,18 +188,383 @@ export default nextConfig;
 ## 185_ルーティングとは？基本的な書き方について学ぼう
 [toTop](#)
 
+- ルーティングとは、URL でページしたときに使われるコンポーネントを指定する紐づけ機能
+  - `pages`フォルダ配下に`index.js`を配置することで、自動的にページを紐づけてくれる
+  - `src/page/index.js`の場合、URL=`http://localhost:4000/`がパスとなる
+
+### 講義内のコンポーネント
+- ページコンポーネント：`src/pages/index.js`
+  - アクセスURL ：`http://localhost:4000/`
+```jsx
+import Link from "next/link";
+
+export default function Home() {
+  return (
+    <>
+      <h1>Home</h1>
+      <Link href={{ pathname: "/07_router", query: { key: "value" } }}>
+        <a>/07_router</a>
+      </Link>
+    </>
+  );
+}
+```
+
+- ページコンポーネント：[src/pages/07_router/index.js](./end/src/pages/07_router/index.js)
+  - アクセスURL ：`http://localhost:4000/07_router/`
+```jsx
+// POINT Next.jsにおけるルーティングについて学ぼう
+export default function Blog() {
+  return <h1>Blog Page</h1>
+}
+```
+
+- フォルダ配下に、（`index.js`以外の）ファイルを置いた場合、パス名（末尾）と一致するファイルがあると、ページコンテンツと利用される
+  * ページコンポーネント：[src/pages/07_router/blog/first.js](./end/src/pages/07_router/blog/first.js)
+  - アクセスURL ：`http://localhost:4000/07_router/blog/first`
+```jsx
+// POINT ルーティングは/pages内のディレクトリ構成に一致する
+export default function First() {
+    return <h1>First</h1>
+}
+```
+
+
 
 ## 186_動的なルーティングの書き方について学ぼう
 [toTop](#)
+
+- 動的なルーティング（ダイナミックルーティング）の方法を紹介
+- ダイナミックルーティングとは、URLのパス名に応じて動的にコンテンツを準備する方法
+  * ページそのもののコンポーネントは作らず、下のようにブログ記事などを提供する場合に利用
+```js
+// http://localhost:4000/07_router/blog/1
+// http://localhost:4000/07_router/blog/2
+// http://localhost:4000/07_router/blog/3
+// http://localhost:4000/07_router/blog/4
+```
+  * 「ファイル名で実現する」方法と「フォルダ名で実現する」方法がある
+
+### 「ファイル名で実現する」
+- `pages`配下のファイル名を`[number].js`のように、`[...]`で囲む
+  * `number`部分を補完して、URL に応じたコンテンツが提供される
+  * ページコンポーネント：[src/pages/07_router/blog/[number].js](./end/src/pages/07_router/blog/[number].js)
+  - アクセスURL ：`http://localhost:4000/07_router/blog/111`
+```jsx
+export default function Number() {
+    return (
+        <>
+            <h1>[number].js</h1>
+        </>
+    );
+}
+```
+
+### 「フォルダ名で実現する」
+- `pages`配下のフォルダ名で、`[name]`のように、`[...]`で囲む
+  * `name`部分を補完して、URL に応じたコンテンツが提供される
+  * ページコンポーネント：[src/pages/07_router/[name]/setting.js](./end/src/pages/07_router/[name]/setting.js)
+  - アクセスURL ：`http://localhost:4000/07_router/hello/setting`
+```jsx
+export default function Setting() {
+    return (
+        <>
+            <h1>[name]/setting.js</h1>
+        </>
+    );
+}
+```
+
+### 「ファイル名で実現する」と「フォルダ名で実現する」が競合した場合
+- もし、URL が「ファイル名で実現する」と「フォルダ名で実現する」のどちらでも解釈できる場合、
+  * 「ファイル名で実現する」のページが優先される
+    * URL をパスの上位から解析して、存在しているフォルダ・ファイルが紐づけられているため
+  * アクセスURL ：`http://localhost:4000/07_router/blog/setting`
+    * ⇒　[src/pages/07_router/blog/[number].js](./end/src/pages/07_router/blog/[number].js)のページにアクセスされる
 
 
 ## 187_指定されたパスの値をJSで取得してみよう
 [toTop](#)
 
+- コンポーネントが、URL 情報を把握するには２つの方法がある：
+  * `getServerSideProps`を利用する方法
+  * `useRouter`を利用する方法
+
+### `getServerSideProps`を利用する方法
+
+* Next.jsのSSR機能を使って、サーバサイドでURL 情報を取得して、コンテンツに提供する方法
+* ページコンポーネント：[src/pages/07_router/[name]/setting.js](./end/src/pages/07_router/[name]/setting.js)
+  - アクセスURL ：`http://localhost:4000/07_router/hello/setting`
+  - アクセスURL ：`http://localhost:4000/07_router/aaa/setting`
+  - アクセスURL ：`http://localhost:4000/07_router/123/setting`
+```jsx
+export default function Setting({ query }) {
+    console.log(query);
+    // {name: 'hello'}
+
+    return (
+        <>
+            <h1>props から取得:{query.name}</h1>
+        </>
+    )
+}
+
+// export async function getServerSideProps({ query }) {
+export async function getServerSideProps(context) {
+    console.log(context.query);
+    // { name: 'hello' }
+    const query = context.query; // ただし、これは`undefined`になってしまうようだ
+    console.log(query);
+    // const { query } = context.query; // 分割代入で、`query`プロパティを取得する
+    // 上が`pnpm run dev`実行してるコンソールに表示される
+
+    return {
+        props: { query }
+    }
+}
+```
+
+### `useRouter`を利用する方法
+- `next/router`ライブラリの`useRouter()`のフックよりパスの情報を取得できる
+  * `router`オブジェクト から情報を取得する
+* ページコンポーネント：[src/pages/07_router/[name]/setting.js](./end/src/pages/07_router/[name]/setting.js)
+```jsx
+import { useRouter } from "next/router";
+
+export default function Setting({ query }) {
+    const router = useRouter();
+    console.log(router);
+    // {
+    //     "pathname": "/07_router/[name]/setting",
+    //     "route": "/07_router/[name]/setting",
+    //     "query": {
+    //         "name": "hello" // ココがパス名になる
+    //     },
+    //     "asPath": "/07_router/hello/setting",
+    //     "components": {
+    //         "/07_router/[name]/setting": {
+    //             "initial": true,
+    //             "props": {
+    //                 "pageProps": {
+    //                     "query": {
+    //                         "name": "hello"
+    //                     }
+    //                 },
+    //                 "__N_SSP": true
+    //             },
+    //             "__N_SSP": true,
+    //             "__N_RSC": false
+    //         },
+    //         "/_app": {
+    //             "styleSheets": []
+    //         }
+    //     },
+    //     "isFallback": false,
+    //     "basePath": "",
+    //     "isReady": true,
+    //     "isPreview": false,
+    //     "isLocaleDomain": false,
+    //     "events": {}
+    // }
+
+
+    // routerの queryプロパティの値を表示する
+    return (
+        <>
+            <h1>routerから取得:{router.query.name}</h1>
+        </>
+    )
+}
+```
 
 ## 188_useRouterを使って画面遷移を行おう
 [toTop](#)
 
+- `useRouter`は、`router`オブジェクトにアクセスするためのフック
+  * いくつもの情報やメソッドがある
+  * 参考）[next/router](https://nextjs-ja-translation-docs.vercel.app/docs/api-reference/next/router)サイト
+
+### URIのパス・クエリパラメータの取得
+  * URI のパス名やクエリパラメータを取得することができる
+* ページコンポーネント：[src/pages/07_router/[name]/setting.js](./end/src/pages/07_router/[name]/setting.js)
+```jsx
+import { useRouter } from "next/router";
+
+export default function Setting({ query }) {
+    const router = useRouter();
+    console.log(router.query);
+    // 右URLへのアクセス時: http://localhost:4000/07_router/hello/setting
+    // { name: 'hello' }
+    // 右URLへのアクセス時: http://localhost:4000/07_router/aaa/setting?key1=value1&&key2=value2
+    // { key: [ 'value1', 'value2' ], name: 'aaa' }
+
+    // routerの queryプロパティの値を表示する
+    return (
+        <>
+            <h1>routerから取得:{router.query.name}</h1>
+        </>
+    )
+}
+```
+
+
+### URIの移動
+- `router`のメソッドを使って遷移する
+  * `push`・`replace`・`reload`などにより遷移動作が変わる
+```jsx
+export default function Setting({ query }) {
+    console.log(query);
+    // {name: 'hello'}
+
+    const router = useRouter();
+    console.log(router.query);
+
+    const clickHandler = () => {
+        // `router.push()`メソッド：ページ遷移する
+        router.push('/'); // トップページに遷移する
+
+        // router.pushの第２引数：トップページに移動するが、URLは`dummy-url`になる
+        // router.push('/', '/dummy-url');
+
+        // `router.replace()` メソッド：
+        // - `push`と同様に遷移するが、遷移したときに現ページのブラウザの履歴に残さない
+        // - ほかに、`router.back()`というメソッドで履歴をさかのぼる機能もある
+        // router.replace('/', '/dummy-url')
+
+        // router.reload()メソッド：同じページをリロードする（ブラウザの更新ボタン）
+        // router.reload()
+    }
+    return (
+        <>
+            <h1>routerから取得:{router.query.name}</h1>
+            <button onClick={clickHandler}>アクションによる画面遷移</button>
+        </>
+    )
+}
+```
+
+### ソースコード
+- 本セクションまでのソースコード
+  - ただし、動的ルーティングがあるので、コンポーネント間のつながりはない
+- ページコンポーネント：[src/pages/index.js](./end/src/pages/index.js)
+```jsx
+import Link from "next/link";
+
+export default function Home() {
+  return (
+    <>
+      <h1>Home</h1>
+      <Link href={{ pathname: "/07_router", query: { key: "value" } }}>
+        <a>/07_router</a>
+      </Link>
+      <Link href="/07_router/hello/setting">
+      <a>/07_router</a>
+      </Link>
+    </>
+  );
+}
+```
+
+- 共通コンポーネント：[src/pages/_app.js](./end/src/pages/_app.js)
+  * 後続のセクションで追加されるコンポーネントだが、すでに見えている
+  - `src/page/_app.js`があると、どのページでも読みだされる共通コンポーネントとして使われる
+```jsx
+//　POINT _app.jsにはページ全体で共通化したい処理を記述
+import "../styles/globals.css";
+import { AppProvider } from "../context/AppContext";
+import Layout1 from "../components/layout/layout1";
+
+function MyApp({ Component, pageProps }) {
+  const getLayout = Component.getLayout ?? ((page) => <Layout1>{page}</Layout1>)
+  return (
+    <AppProvider>
+      {getLayout(<Component {...pageProps} />)}
+    </AppProvider>
+  );
+}
+
+export default MyApp;
+```
+
+- `blog`ページコンポーネント：[src/pages/blog/first.js](./end/src/pages/07_router/blog/first.js)
+```jsx
+// POINT ルーティングは/pages内のディレクトリ構成に一致する
+export default function First() {
+    return <h1>First</h1>
+}
+```
+
+- `blog`ページコンポーネント：[src/pages/blog/[number].js](./end/src/pages/07_router/blog/[number].js)
+```jsx
+// POINT [SSR]ダイナミックルーティング
+// http://localhost:4000/07_router/blog/1
+// http://localhost:4000/07_router/blog/2
+// http://localhost:4000/07_router/blog/3
+// http://localhost:4000/07_router/blog/4
+
+export default function Number() {
+    return (
+        <>
+            <h1>[number].js</h1>
+        </>
+    );
+}
+```
+
+- `[name]`ページコンポーネント：[src/pages/[name]/setting.js](./end/src/pages/07_router/[name]/setting.js)
+```jsx
+import { useRouter } from "next/router";
+
+// http://localhost:4000/07_router/hello/setting
+
+// router.pushのドキュメント
+// https://nextjs-ja-translation-docs.vercel.app/docs/api-reference/next/router#routerpush
+
+export default function Setting({ query }) {
+    console.log(query);
+    // {name: 'hello'}
+
+    const router = useRouter();
+    console.log(router.query);
+
+    const clickHandler = () => {
+        // `router.push()`メソッド：ページ遷移する
+        router.push('/'); // トップページに遷移する
+
+        // router.pushの第２引数：トップページに移動するが、URLは`dummy-url`になる
+        // router.push('/', '/dummy-url');
+
+        // `router.replace()` メソッド：
+        // - `push`と同様に遷移するが、遷移したときに現ページのブラウザの履歴に残さない
+        // - ほかに、`router.back()`というメソッドで履歴をさかのぼる機能もある
+        // router.replace('/', '/dummy-url')
+
+        // router.reload()メソッド：同じページをリロードする（ブラウザの更新ボタン）
+        // router.reload()
+    }
+    return (
+        <>
+            <h1>props から取得:{query.name}</h1>
+            <h1>routerから取得:{router.query.name}</h1>
+            <button onClick={clickHandler}>アクションによる画面遷移</button>
+        </>
+    )
+}
+
+// export async function getServerSideProps(context) {
+export async function getServerSideProps({ query }) {
+    // console.log(context.query);
+    // { name: 'hello' }
+    // const query = context.query; // ただし、これは`undefined`になってしまうようだ
+    // console.log(query);
+    // { name: 'hello' }
+    // 上が`pnpm run dev`実行してるコンソールに表示される
+
+    return {
+        props: { query }
+    }
+}
+```
 
 ## 189_Linkを使って画面遷移を行おう
 [toTop](#)
