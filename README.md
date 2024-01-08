@@ -155,6 +155,18 @@ cp -p 00_references/11_Udemy_React18-complete-guide/${TARGET_DIRNAME}/README.md 
 cd ${TARGET_DIRNAME}/end;
 pnpm i;
 pnpm run dev;
+#
+# eslintのエラー修正をしたときに追加パッケージ（prettier）が求められたら、以下を実行
+# prettier eslint-config-prettier eslint-plugin-prettier -D # append package
+#
+# convert to UTF file
+# cd ../end;
+# for filename in `find src -name "*.js"` ; do ls $filename; nkf_to_utffile $filename; done
+# for filename in `find src -name "*.css"` ; do ls $filename; nkf_to_utffile $filename; done
+# for filename in `find .  -maxdepth 1 -name "*.json"` ; do ls $filename; nkf_to_utffile $filename; done
+#
+# copy previous Memo
+# cp ../00_references/11_Udemy_React18-complete-guide/${TARGET_DIRNAME}/README.md .
 ```
 
 
