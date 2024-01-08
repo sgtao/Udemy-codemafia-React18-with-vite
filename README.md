@@ -63,14 +63,18 @@
   - Reactのデバッグの仕方
   - npmコマンドの使い方やパッケージ管理方法
 
-### 環境構築方法
+### 環境構築方法（Reactプロジェクトフォルダ）
+[toTop](#)
+
 #### プロジェクトフォルダの作成
+- Reactテンプレートを使ってプロジェクトフォルダを作成
 ```sh
 npm create vite@latest ${TARGET_DIRNAME} -- --template react
 ```
 
 #### 教材ファイルをJSXファイルへコンバート
-- 
+- 次の手順で、提供コンテンツを`vite`利用環境へ展開できる
+  * 後述するNext.js（`17_nextjs_p1`と`18_nextjs_p2`）は`vite`は利用せず展開可能です
 ```sh
 export TARGET_DIRNAME="04_react_basic"
 rm -rf ${TARGET_DIRNAME}
@@ -135,6 +139,22 @@ See https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#l
   Plugin: vite:import-analysis
   File: src/App.jsx
 
+```
+
+### 環境構築方法（Next.jsプロジェクトフォルダ）
+[toTop](#)
+
+- Next.js（`17_nextjs_p1`と`18_nextjs_p2`）プロジェクトは、提供コンテンツをそのまま利用する
+  - 理由：提供コンテンツをそのまま利用してもパフォーマンスは確保できるため
+```sh
+export TARGET_DIRNAME="17_nextjs_p1";
+rm -rf ${TARGET_DIRNAME};
+cp -r 00_references/99_react-guide-material/${TARGET_DIRNAME} ${TARGET_DIRNAME}
+cp -p 00_references/11_Udemy_React18-complete-guide/${TARGET_DIRNAME}/README.md ${TARGET_DIRNAME}/.;
+#
+cd ${TARGET_DIRNAME}/end;
+pnpm i;
+pnpm run dev;
 ```
 
 
